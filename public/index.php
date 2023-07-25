@@ -5,17 +5,32 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 
 use Dotenv\Dotenv;
+use Psr\Container\ContainerInterface;
 use Slim\Factory\AppFactory;
 use Source\Debug\InitCustomDumper;
 
 require __DIR__ . '/../vendor/autoload.php';
 
+new InitCustomDumper();
+
 $dotenv = Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
-new InitCustomDumper();
-
 $containerBuilder = new \DI\ContainerBuilder();
+$containerBuilder->addDefinitions([
+    PDO::class => function (ContainerInterface $container) {
+        return new \PDO(
+            sprintf('mysql:host=%s;dbname=%s', $_ENV['APP_DB_HOST'] ?? '', $_ENV['APP_DB_NAME'] ?? ''),
+            $_ENV['APP_DB_USER'] ?? '',
+            $_ENV['APP_DB_PASSWORD'] ?? '',
+            [
+                \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                \PDO::ATTR_EMULATE_PREPARES => false,
+                \PDO::ATTR_STRINGIFY_FETCHES => false,
+            ]
+        );
+    },
+]);
 
 $container = $containerBuilder->build();
 
@@ -28,6 +43,11 @@ $app->addErrorMiddleware(true, false, false);
 // main routes
 //----------------------------------------------------------------
 $app->get('/', \App\Controllers\MainController::class . ':homepage');
+
+//----------------------------------------------------------------
+// sandbox routes
+//----------------------------------------------------------------
+$app->get('/sandbox', \App\Controllers\SandboxControllers\MainSandboxController::class . ':main');
 
 //----------------------------------------------------------------
 // test routes
