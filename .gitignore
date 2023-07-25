@@ -1,5 +1,13 @@
+# ide
 /.idea
 
+# libs
 /vendor
 
+# back
 .env
+
+# front
+/node_modules
+/client/dist
+/static/js/libs

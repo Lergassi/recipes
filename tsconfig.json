@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "alwaysStrict": true,
+    "moduleResolution": "Node",
+    "noImplicitAny": false,
+    "module": "esnext",
+    "target": "ES6",
+    "baseUrl": ".",
+    "paths": {
+    },
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "outDir": "./client/dist"
+  },
+  "include": [
+    "client/src/**/*",
+  ],
+  "exclude": [
+
+  ]
+}

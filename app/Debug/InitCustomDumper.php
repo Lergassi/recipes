@@ -1,6 +1,6 @@
 <?php
 
-namespace Source\Debug;
+namespace App\Debug;
 
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 use Symfony\Component\VarDumper\Dumper\ContextProvider\CliContextProvider;

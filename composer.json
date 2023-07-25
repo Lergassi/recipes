@@ -13,8 +13,7 @@
             "define.php"
         ],
         "psr-4": {
-            "App\\": "app",
-            "Source\\": "src"
+            "App\\": "app"
         }
     }
 }

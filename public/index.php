@@ -4,10 +4,10 @@ ini_set('error_reporting', E_ALL);
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 
+use App\Debug\InitCustomDumper;
 use Dotenv\Dotenv;
 use Psr\Container\ContainerInterface;
 use Slim\Factory\AppFactory;
-use Source\Debug\InitCustomDumper;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -52,6 +52,7 @@ $app->get('/sandbox', \App\Controllers\SandboxControllers\MainSandboxController:
 //----------------------------------------------------------------
 // test routes
 //----------------------------------------------------------------
+$app->get('/test', \App\Controllers\TestControllers\MainTestController::class . ':main');
 $app->get('/test/dump', \App\Controllers\TestControllers\MainTestController::class . ':testDump');
 $app->get('/test/container', \App\Controllers\TestControllers\MainTestController::class . ':testContainer');
 

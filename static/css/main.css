@@ -1,0 +1,15 @@
+.base-table {
+    border-collapse: collapse;
+    border: 1px solid #a1a1a1;
+}
+
+.base-table td,
+.base-table th {
+    border: 1px solid #a1a1a1;
+    padding: 2px 6px;
+}
+
+/* dev */
+/*.dev_block {*/
+/*    padding-bottom: 15px;*/
+/*}*/

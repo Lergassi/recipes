@@ -1,0 +1,17 @@
+{
+  "name": "recipes",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build_ts": "tsc",
+    "build_and_watch_ts": "rm -rf ./client/dist/ && mkdir ./client/dist && tsc --watch",
+    "build_webpack": "webpack --config webpack.config.cjs",
+    "build_and_watch_webpack": "webpack --config webpack.config.cjs --watch"
+  },
+  "author": "",
+  "devDependencies": {
+    "@types/node": "^20.4.4",
+    "typescript": "^5.1.6"
+  }
+}

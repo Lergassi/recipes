@@ -15,6 +15,13 @@ class MainTestController
         $this->container = $container;
     }
 
+    public function main(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $response->getBody()->write('Hello, World!');
+
+        return $response;
+    }
+
     public function testDump(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         dump('Hello, World!');
