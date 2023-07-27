@@ -36,6 +36,9 @@ $container = $containerBuilder->build();
 
 $app = AppFactory::createFromContainer($container);
 
+//todo Только для dev.
+$container->set('app', $app);
+
 //todo: Только для dev.
 $app->addErrorMiddleware(true, false, false);
 
@@ -44,10 +47,28 @@ $app->addErrorMiddleware(true, false, false);
 //----------------------------------------------------------------
 $app->get('/', \App\Controllers\MainController::class . ':homepage');
 
+$app->get('/quality/create', \App\Controllers\QualityController::class . ':create');
+$app->get('/quality/get', \App\Controllers\QualityController::class . ':get');
+$app->get('/quality/update', \App\Controllers\QualityController::class . ':update');
+$app->get('/quality/delete', \App\Controllers\QualityController::class . ':delete');
+
+$app->get('/reference_product/create', \App\Controllers\ReferenceProductController::class . ':create');
+$app->get('/reference_product/get', \App\Controllers\ReferenceProductController::class . ':get');
+$app->get('/reference_product/update', \App\Controllers\ReferenceProductController::class . ':update');
+$app->get('/reference_product/delete', \App\Controllers\ReferenceProductController::class . ':delete');
+
+$app->get('/dish/create', \App\Controllers\DishController::class . ':create');
+$app->get('/dish/get', \App\Controllers\DishController::class . ':get');
+$app->get('/dish/update', \App\Controllers\DishController::class . ':update');
+$app->get('/dish/delete', \App\Controllers\DishController::class . ':delete');
+
 //----------------------------------------------------------------
 // sandbox routes
 //----------------------------------------------------------------
 $app->get('/sandbox', \App\Controllers\SandboxControllers\MainSandboxController::class . ':main');
+$app->get('/sandbox/db', \App\Controllers\SandboxControllers\DatabaseSandboxController::class . ':run');
+$app->get('/sandbox/api', \App\Controllers\SandboxControllers\ApiSandboxController::class . ':run');
+$app->get('/sandbox/validation', \App\Controllers\SandboxControllers\ValidationSandboxController::class . ':run');
 
 //----------------------------------------------------------------
 // test routes

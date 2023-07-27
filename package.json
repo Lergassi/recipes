@@ -11,7 +11,11 @@
   },
   "author": "",
   "devDependencies": {
+    "@types/lodash": "^4.14.196",
     "@types/node": "^20.4.4",
     "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
   }
 }

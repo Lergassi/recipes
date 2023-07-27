@@ -17,7 +17,9 @@ class MainSandboxController
 
     public function main(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $this->_devMysqlGetStarted();
+//        $this->_devMysqlGetStarted();
+//        $this->_devStrval();
+        $this->_devRequestQueryParams($request);
 
         return $response;
     }
@@ -25,5 +27,21 @@ class MainSandboxController
     private function _devMysqlGetStarted()
     {
         dump($this->_container->get(\PDO::class));
+    }
+
+    private function _devStrval()
+    {
+        dump([
+            strval(-1),
+            strval(0),
+            strval(1),
+            strval(null),
+//            strval([]),
+        ]);
+    }
+
+    private function _devRequestQueryParams(ServerRequestInterface $request)
+    {
+        dump($request->getQueryParams());
     }
 }
