@@ -6,7 +6,8 @@
         "php-di/php-di": "^7.0",
         "symfony/var-dumper": "^6.3",
         "vlucas/phpdotenv": "^5.5",
-        "symfony/console": "^6.3"
+        "symfony/console": "^6.3",
+        "behat/transliterator": "^1.5"
     },
     "autoload": {
         "files": [

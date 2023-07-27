@@ -62,11 +62,17 @@ $app->get('/dish/get', \App\Controllers\DishController::class . ':get');
 $app->get('/dish/update', \App\Controllers\DishController::class . ':update');
 $app->get('/dish/delete', \App\Controllers\DishController::class . ':delete');
 
+$app->get('/dish_version/create', \App\Controllers\DishVersionController::class . ':create');
+$app->get('/dish_version/get', \App\Controllers\DishVersionController::class . ':get');
+$app->get('/dish_version/update', \App\Controllers\DishVersionController::class . ':update');
+$app->get('/dish_version/delete', \App\Controllers\DishVersionController::class . ':delete');
+
 //----------------------------------------------------------------
 // sandbox routes
 //----------------------------------------------------------------
 $app->get('/sandbox', \App\Controllers\SandboxControllers\MainSandboxController::class . ':main');
 $app->get('/sandbox/db', \App\Controllers\SandboxControllers\DatabaseSandboxController::class . ':run');
+$app->get('/sandbox/data_manager', \App\Controllers\SandboxControllers\DataManagerSandbox::class . ':run');
 $app->get('/sandbox/api', \App\Controllers\SandboxControllers\ApiSandboxController::class . ':run');
 $app->get('/sandbox/validation', \App\Controllers\SandboxControllers\ValidationSandboxController::class . ':run');
 
