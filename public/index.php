@@ -67,6 +67,11 @@ $app->get('/dish_version/get', \App\Controllers\DishVersionController::class . '
 $app->get('/dish_version/update', \App\Controllers\DishVersionController::class . ':update');
 $app->get('/dish_version/delete', \App\Controllers\DishVersionController::class . ':delete');
 
+$app->get('/recipe/add_product', \App\Controllers\RecipeController::class . ':addProduct');
+$app->get('/recipe/remove_product', \App\Controllers\RecipeController::class . ':removeProduct');
+
+//$app->get('/branch/commit', \App\Controllers\BranchController::class . ':commit');
+
 //----------------------------------------------------------------
 // sandbox routes
 //----------------------------------------------------------------

@@ -16,8 +16,9 @@ class DatabaseSandboxController extends AbstractSandboxController
         $this->pdo = $this->getContainer()->get(\PDO::class);
 
 //        $this->_devCreateQuality();
-        $this->_devUpdateQuality01();
+//        $this->_devUpdateQuality01();
 //        $this->_devUpdateQuality02();
+        $this->_testFetch();
 
         return $response;
     }
@@ -110,5 +111,19 @@ class DatabaseSandboxController extends AbstractSandboxController
         $stmt->execute();
 
         return $stmt->rowCount();
+    }
+
+    private function _testFetch()
+    {
+        $ID = 42;
+//        $ID = 1;
+        $query = 'select * from recipes where id = :id';
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(':id', $ID);
+        $stmt->execute();
+
+//        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $result = $stmt->fetch();
+        dump($result);
     }
 }

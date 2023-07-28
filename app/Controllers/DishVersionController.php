@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Factories\BranchFactory;
+use App\Factories\RecipeFactory;
 use App\Services\AliasGenerator;
 use App\Services\ResponseBuilder;
 use App\Services\Validator;
@@ -11,16 +13,27 @@ use Psr\Http\Message\ServerRequestInterface;
 class DishVersionController
 {
     private \PDO $pdo;
-    private ResponseBuilder $responseBuilder;
-    private Validator $validator;
+    private BranchFactory $branchFactory;
+    private RecipeFactory $recipeFactory;
     private AliasGenerator $aliasGenerator;
+    private Validator $validator;
+    private ResponseBuilder $responseBuilder;
 
-    public function __construct(\PDO $pdo, AliasGenerator $aliasGenerator, ResponseBuilder $responseBuilder, Validator $validator)
+    public function __construct(
+        \PDO $pdo,
+        BranchFactory $branchFactory,
+        RecipeFactory $recipeFactory,
+        AliasGenerator $aliasGenerator,
+        Validator $validator,
+        ResponseBuilder $responseBuilder,
+    )
     {
         $this->pdo = $pdo;
         $this->responseBuilder = $responseBuilder;
         $this->validator = $validator;
         $this->aliasGenerator = $aliasGenerator;
+        $this->branchFactory = $branchFactory;
+        $this->recipeFactory = $recipeFactory;
     }
 
     public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -45,6 +58,8 @@ class DishVersionController
         ];
         //todo: validate data
 
+        $this->pdo->beginTransaction();
+
         $query = 'insert into dish_versions (name, alias, dish_id, quality_id) values (:name, :alias, :dish_id, :quality_id)';
 
         $stmt = $this->pdo->prepare($query);
@@ -56,7 +71,14 @@ class DishVersionController
 
         $stmt->execute();
 
-        $this->responseBuilder->set($this->pdo->lastInsertId());
+        $dishVersionID = $this->pdo->lastInsertId();
+
+        $branchID = $this->branchFactory->create($dishVersionID, 'main');
+        $this->recipeFactory->createMain($branchID);
+
+        $this->pdo->commit();
+
+        $this->responseBuilder->set($dishVersionID);
 
         return $this->responseBuilder->build($response);
     }

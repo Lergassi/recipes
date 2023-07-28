@@ -67,9 +67,7 @@ class DishController
 
         $this->responseBuilder->set($result);
 
-        $response = $this->responseBuilder->build($response);
-
-        return $response;
+        return $this->responseBuilder->build($response);
     }
 
     public function update(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -108,9 +106,8 @@ class DishController
         $stmt->execute();
 
         $this->responseBuilder->set($stmt->rowCount());
-        $response = $this->responseBuilder->build($response);
 
-        return $response;
+        return $this->responseBuilder->build($response);
     }
 
     public function delete(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -139,8 +136,7 @@ class DishController
         $stmt->execute();
 
         $this->responseBuilder->set($stmt->rowCount());
-        $response = $this->responseBuilder->build($response);
 
-        return $response;
+        return $this->responseBuilder->build($response);
     }
 }
