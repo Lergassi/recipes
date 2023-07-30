@@ -57,13 +57,37 @@ class DishController
         return $this->responseBuilder->build($response);
     }
 
-    public function get(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    public function all(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $query = 'select d.* from dishes d left join qualities q on d.quality_id = q.id order by d.name, q.sort';
         $stmt = $this->pdo->prepare($query);
         $stmt->execute();
 
         $result = $stmt->fetchAll();
+
+        $this->responseBuilder->set($result);
+
+        return $this->responseBuilder->build($response);
+    }
+
+    public function get(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $requestData = $request->getQueryParams();
+
+        if (!$this->validator->validateRequiredKeys($requestData, [
+            'id',
+        ])) {
+            $this->responseBuilder->addError('Не указаны обязательные параметры.');
+
+            return $this->responseBuilder->build($response);
+        }
+
+        $query = 'select d.* from dishes d where d.id = :id';
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(':id', $requestData['id']);
+        $stmt->execute();
+
+        $result = $stmt->fetch();
 
         $this->responseBuilder->set($result);
 

@@ -50,7 +50,7 @@ create table if not exists dish_version_branches
     dish_version_id int unsigned not null,
     primary key (id),
     foreign key (dish_version_id) references dish_versions (id),
-    unique (name)
+    unique (name, dish_version_id)
 );
 
 create table if not exists recipes
@@ -59,8 +59,7 @@ create table if not exists recipes
     is_main bool not null, # main, committed
     dish_version_branch_id int unsigned not null,
     primary key (id),
-    foreign key (dish_version_branch_id) references dish_version_branches (id),
-    unique (is_main, dish_version_branch_id)
+    foreign key (dish_version_branch_id) references dish_version_branches (id)
 );
 
 create table if not exists recipe_positions

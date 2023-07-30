@@ -1,5 +1,8 @@
 # wipe
 set foreign_key_checks = 0;
+truncate table recipe_positions;
+truncate table recipes;
+truncate table dish_version_branches;
 truncate table dish_versions;
 truncate table dishes;
 truncate table reference_products;

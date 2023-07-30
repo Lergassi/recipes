@@ -5,13 +5,16 @@ namespace App\Factories;
 class BranchFactory
 {
     private \PDO $pdo;
+    private RecipeFactory $recipeFactory;
 
-    public function __construct(\PDO $pdo)
+    public function __construct(\PDO $pdo, RecipeFactory $recipeFactory)
     {
         $this->pdo = $pdo;
+        $this->recipeFactory = $recipeFactory;
     }
 
-    public function create(int $dishVersionID, string $name, int $commitID = null, string $description = null): int
+//    public function create(int $dishVersionID, string $name, int $commitID = null, string $description = null): int
+    public function create(int $dishVersionID, string $name, string $description = null): int
     {
         $query = 'insert into dish_version_branches (name, description, dish_version_id) VALUES (:name, :description, :dish_version_id)';
 
@@ -28,5 +31,10 @@ class BranchFactory
         //todo: Копирование рецепта.
 
         return $this->pdo->lastInsertId();
+    }
+
+    public function createFromCommit(int $dishVersionID, string $name, string $description = null): int
+    {
+        return 0;
     }
 }

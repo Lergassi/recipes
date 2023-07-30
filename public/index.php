@@ -58,19 +58,25 @@ $app->get('/reference_product/update', \App\Controllers\ReferenceProductControll
 $app->get('/reference_product/delete', \App\Controllers\ReferenceProductController::class . ':delete');
 
 $app->get('/dish/create', \App\Controllers\DishController::class . ':create');
+$app->get('/dishes', \App\Controllers\DishController::class . ':all');
 $app->get('/dish/get', \App\Controllers\DishController::class . ':get');
 $app->get('/dish/update', \App\Controllers\DishController::class . ':update');
 $app->get('/dish/delete', \App\Controllers\DishController::class . ':delete');
 
 $app->get('/dish_version/create', \App\Controllers\DishVersionController::class . ':create');
+$app->get('/dish_versions', \App\Controllers\DishVersionController::class . ':all');
 $app->get('/dish_version/get', \App\Controllers\DishVersionController::class . ':get');
 $app->get('/dish_version/update', \App\Controllers\DishVersionController::class . ':update');
 $app->get('/dish_version/delete', \App\Controllers\DishVersionController::class . ':delete');
 
-$app->get('/recipe/add_product', \App\Controllers\RecipeController::class . ':addProduct');
-$app->get('/recipe/remove_product', \App\Controllers\RecipeController::class . ':removeProduct');
+//$app->get('/recipe/add_product', \App\Controllers\RecipeController::class . ':addProduct');
+//$app->get('/recipe/remove_product', \App\Controllers\RecipeController::class . ':removeProduct');
 
-//$app->get('/branch/commit', \App\Controllers\BranchController::class . ':commit');
+$app->get('/branch/create', \App\Controllers\BranchController::class . ':create');
+$app->get('/branch/get', \App\Controllers\BranchController::class . ':get');
+$app->get('/branch/add_product', \App\Controllers\BranchController::class . ':addProduct');
+$app->get('/branch/remove_product', \App\Controllers\BranchController::class . ':removeProduct');
+$app->get('/branch/commit', \App\Controllers\BranchController::class . ':commit');
 
 //----------------------------------------------------------------
 // sandbox routes

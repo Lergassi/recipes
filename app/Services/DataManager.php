@@ -39,7 +39,7 @@ class DataManager
         return $stmt->fetch()['count'] === 1;
     }
 
-    public function findRecipe(int $ID): array|null
+    public function findOneRecipe(int $ID): array|null
     {
         $query = 'select * from recipes where id = :id';
         $stmt = $this->pdo->prepare($query);
@@ -48,12 +48,23 @@ class DataManager
 
         $stmt->execute();
 
-        $recipe = $stmt->fetch();
-
-        return $recipe ? $recipe : null;
+        return $this->returnOneOrNull($stmt->fetch());
     }
 
-    public function findRecipePosition(int $recipeID, int $productID): array|null
+    public function findMainRecipeByBranch(int $branchID): array|null
+    {
+        $query = 'select r.* from recipes r where r.dish_version_branch_id = :dish_version_branch_id and r.is_main = :is_main';
+        $stmt = $this->pdo->prepare($query);
+
+        $stmt->bindValue(':dish_version_branch_id', $branchID);
+        $stmt->bindValue(':is_main', 1);
+
+        $stmt->execute();
+
+        return $this->returnOneOrNull($stmt->fetch());
+    }
+
+    public function findRecipePositionByProduct(int $recipeID, int $productID): array|null
     {
         $existsRecipePositionQuery = 'select rp.* from recipe_positions rp where rp.recipe_id = :recipe_id and rp.reference_product_id = :reference_product_id';
         $stmt = $this->pdo->prepare($existsRecipePositionQuery);
@@ -63,20 +74,60 @@ class DataManager
 
         $stmt->execute();
 
-        $recipePosition = $stmt->fetch();
-
-        return $recipePosition ? $recipePosition : null;
+        return $this->returnOneOrNull($stmt->fetch());
     }
 
-//    public function findBranch(int $ID)
-//    {
-//        $query = 'select * from dish_version_branches where id = :id';
-//        $stmt = $this->pdo->prepare($query);
-//        $stmt->bindValue(':id', $ID);
-//        $stmt->execute();
-//
-//        $branch = $stmt->fetch();
-//
-//        return $branch ? $branch : null;
-//    }
+    public function findOneBranch(int $ID)
+    {
+        $query = 'select * from dish_version_branches dvb where dvb.id = :id';
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(':id', $ID);
+        $stmt->execute();
+        $branch = $stmt->fetch();    //todo: Если не запустить execute будет false/[]. Так задумано?
+
+        return $this->returnOneOrNull($branch);
+    }
+
+    /**
+     * @param int $ID
+     * @return array|false
+     */
+    public function findRecipePositionsByBranch(int $ID)
+    {
+        $query = 'select rp.* from recipe_positions rp left join recipes r on rp.recipe_id = r.id left join dish_version_branches dvb on r.dish_version_branch_id = dvb.id left join reference_products rfp on rp.reference_product_id = rfp.id where dvb.id = :id order by rfp.sort';
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue(':id', $ID);
+//        $stmt->bindValue(':is_main', 1);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    public function findOneDishVersion(int $ID): array|null
+    {
+        $selectDishVersionQuery = 'select dv.* from dish_versions dv where dv.id = :id';
+
+        $selectDishVersionStmt = $this->pdo->prepare($selectDishVersionQuery);
+        $selectDishVersionStmt->bindValue('id', $ID);
+        $selectDishVersionStmt->execute();
+
+        $dishVersion = $selectDishVersionStmt->fetch();
+
+        return $this->returnOneOrNull($dishVersion);
+    }
+
+    public function findBranches(int $ID)
+    {
+        $branchesQuery = 'select * from dish_version_branches dvb where dvb.dish_version_id = :dish_version_id';
+        $branchesQueryStmt = $this->pdo->prepare($branchesQuery);
+        $branchesQueryStmt->bindValue(':dish_version_id', $ID);
+        $branchesQueryStmt->execute();
+
+        return $branchesQueryStmt->fetchAll();
+    }
+
+    private function returnOneOrNull(mixed $target): mixed
+    {
+        return $target ?: null;
+    }
 }

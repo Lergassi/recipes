@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Factories\BranchFactory;
 use App\Factories\RecipeFactory;
 use App\Services\AliasGenerator;
+use App\Services\DataManager;
 use App\Services\ResponseBuilder;
 use App\Services\Validator;
 use Psr\Http\Message\ResponseInterface;
@@ -18,14 +19,15 @@ class DishVersionController
     private AliasGenerator $aliasGenerator;
     private Validator $validator;
     private ResponseBuilder $responseBuilder;
+    private DataManager $dataManager;
 
     public function __construct(
-        \PDO $pdo,
-        BranchFactory $branchFactory,
-        RecipeFactory $recipeFactory,
-        AliasGenerator $aliasGenerator,
-        Validator $validator,
-        ResponseBuilder $responseBuilder,
+        \PDO            $pdo,
+        BranchFactory   $branchFactory,
+        RecipeFactory   $recipeFactory,
+        AliasGenerator  $aliasGenerator,
+        Validator       $validator,
+        ResponseBuilder $responseBuilder, \App\Services\DataManager $dataManager,
     )
     {
         $this->pdo = $pdo;
@@ -34,6 +36,7 @@ class DishVersionController
         $this->aliasGenerator = $aliasGenerator;
         $this->branchFactory = $branchFactory;
         $this->recipeFactory = $recipeFactory;
+        $this->dataManager = $dataManager;
     }
 
     public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -56,6 +59,7 @@ class DishVersionController
             'dish_id' => intval($requestData['dish_id']),
             'quality_id' => intval($requestData['quality_id']),
         ];
+
         //todo: validate data
 
         $this->pdo->beginTransaction();
@@ -74,7 +78,7 @@ class DishVersionController
         $dishVersionID = $this->pdo->lastInsertId();
 
         $branchID = $this->branchFactory->create($dishVersionID, 'main');
-        $this->recipeFactory->createMain($branchID);
+        $this->recipeFactory->create($branchID, true);
 
         $this->pdo->commit();
 
@@ -83,11 +87,22 @@ class DishVersionController
         return $this->responseBuilder->build($response);
     }
 
-    public function get(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    public function all(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $query = 'select dv.id, dv.name, d.id as d_id, dv.alias, dv.quality_id from dish_versions dv left join dishes d on dv.dish_id = d.id left join qualities q on d.quality_id = q.id order by d.name ASC, dv.name, q.sort';
+        $requestData = $request->getQueryParams();
+
+        if (!$this->validator->validateRequiredKeys($requestData, [
+            'dish_id',
+        ])) {
+            $this->responseBuilder->addError('Не указаны обязательные параметры.');
+
+            return $this->responseBuilder->build($response);
+        }
+
+        $query = 'select dv.id, dv.name, d.id as d_id, dv.alias, dv.quality_id from dish_versions dv left join dishes d on dv.dish_id = d.id left join qualities q on d.quality_id = q.id where dish_id = :dish_id order by d.name, dv.name, q.sort';
 
         $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue('dish_id', intval($requestData['dish_id']));
         $stmt->execute();
 
         $result = $stmt->fetchAll();
@@ -97,6 +112,35 @@ class DishVersionController
         $response = $this->responseBuilder->build($response);
 
         return $response;
+    }
+
+    public function get(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $requestData = $request->getQueryParams();
+
+        if (!$this->validator->validateRequiredKeys($requestData, [
+            'id',
+        ])) {
+            $this->responseBuilder->addError('Не указаны обязательные параметры.');
+
+            return $this->responseBuilder->build($response);
+        }
+
+        $data = [
+            'id' => intval($requestData['id']),
+        ];
+
+        $dishVersion = $this->dataManager->findOneDishVersion($data['id']);
+        if (!$dishVersion) {
+            return $this->responseBuilder->addError('Версия рецепта не найдена.')->build($response);
+        }
+
+        $branches = $this->dataManager->findBranches($dishVersion['id']);
+        $dishVersion['branches'] = $branches;
+
+        $this->responseBuilder->set($dishVersion);
+
+        return $this->responseBuilder->build($response);
     }
 
     public function update(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -157,7 +201,7 @@ class DishVersionController
         $ID = intval($request->getQueryParams()['id']);
 
         //todo: validate data
-        //todo: validate foreign keys
+        //todo: удаление рецептов и коммитов
 
         $query = 'delete from dish_versions where id = :id';
 

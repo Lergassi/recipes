@@ -21,16 +21,18 @@ class ResponseBuilder
         $this->serializer = $serializer;
     }
 
-    public function set(mixed $content): void
+    public function set(mixed $content): ResponseBuilder
     {
         $this->content = $content;
+
+        return $this;
     }
 
-    public function addError(string $error): int
+    public function addError(string $error): ResponseBuilder
     {
         $this->errors[] = $error;
 
-        return count($this->errors);
+        return $this;
     }
 
     public function build(ResponseInterface $response = null): ResponseInterface
