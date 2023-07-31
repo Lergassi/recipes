@@ -19,6 +19,7 @@ insert into reference_products (name, alias, sort) values ('Морковь', 'ca
 insert into reference_products (name, alias, sort) values ('Лук репчатый', 'onion', 300);
 insert into reference_products (name, alias, sort) values ('Соль', 'salt', 400);
 insert into reference_products (name, alias, sort) values ('Черный перец', 'black_pepper', 400);
+insert into reference_products (name, alias, sort) values ('Красный перец', 'chili_pepper', 400);
 insert into reference_products (name, alias, sort) values ('Чеснок', 'garlic', 500);
 insert into reference_products (name, alias, sort) values ('Сушёный чеснок', 'garlic_powder', 1000);
 insert into reference_products (name, alias, sort) values ('Зира', 'cumin', 1000);

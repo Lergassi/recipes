@@ -20,7 +20,8 @@ class DataManagerSandbox extends AbstractSandboxController
 
     public function run(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $this->exists();
+//        $this->exists();
+        $this->findHead();
 
         return $response;
     }
@@ -31,5 +32,12 @@ class DataManagerSandbox extends AbstractSandboxController
         $alias = 'pilaf_01';
 
         dump($this->dataManager->count('dishes', 'alias', $alias));
+    }
+
+    private function findHead()
+    {
+        $recipeID = 1;
+        dump($this->dataManager->findHeadRecipeCommit(1));
+        dump($this->dataManager->findHeadRecipeCommit(6));
     }
 }

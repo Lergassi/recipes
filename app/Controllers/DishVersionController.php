@@ -97,9 +97,13 @@ class DishVersionController
                 ->build($response);
         }
 
+        //todo: Совместить с get логикой.
         $dishVersions = $this->dataManager->findDishVersions(intval($requestData['dish_id']));
         foreach ($dishVersions as &$dishVersion) {
             $dishVersion['recipes'] = $this->dataManager->findRecipes($dishVersion['id']);
+            foreach ($dishVersion['recipes'] as &$recipe) {
+                $recipe['head_commit_id'] = $this->dataManager->findHeadRecipeCommit($recipe['id'])['id'] ?? null;
+            }
         }
 
         $this->responseBuilder->set($dishVersions);
@@ -131,6 +135,9 @@ class DishVersionController
         }
 
         $dishVersion['recipes'] = $this->dataManager->findRecipes($dishVersion['id']);
+        foreach ($dishVersion['recipes'] as &$recipe) {
+            $recipe['head_commit_id'] = $this->dataManager->findHeadRecipeCommit($recipe['id'])['id'] ?? null;
+        }
 
         $this->responseBuilder->set($dishVersion);
 

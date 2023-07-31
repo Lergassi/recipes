@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Factories\BranchFactory;
 use App\Factories\RecipeFactory;
 use App\Services\DataManager;
+use App\Services\RecipeService;
 use App\Services\ResponseBuilder;
 use App\Services\Validator;
 use Psr\Http\Message\ResponseInterface;
@@ -18,6 +19,7 @@ class RecipeController
     private Validator $validator;
     private ResponseBuilder $responseBuilder;
     private DataManager $dataManager;
+    private RecipeService $recipeService;
 
     public function __construct(
         \PDO            $pdo,
@@ -26,6 +28,7 @@ class RecipeController
         DataManager     $dataManager,
         BranchFactory   $branchFactory,
         RecipeFactory   $recipeFactory,
+        RecipeService   $recipeService,
     )
     {
         $this->pdo = $pdo;
@@ -34,6 +37,7 @@ class RecipeController
         $this->dataManager = $dataManager;
         $this->branchFactory = $branchFactory;
         $this->recipeFactory = $recipeFactory;
+        $this->recipeService = $recipeService;
     }
 
 //    public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -93,29 +97,7 @@ class RecipeController
 
         //todo: Проверка возможности редактирования рецепта.
 
-        $recipePosition = $this->dataManager->findRecipePositionByProduct($recipe['id'], $data['reference_product_id']);
-        if (!$recipePosition) {
-            $insertRecipePositionQuery = 'insert into recipe_positions (weight, recipe_id, reference_product_id) VALUES (:weight, :recipe_id, :reference_product_id)';
-            $insertRecipePositionStmt = $this->pdo->prepare($insertRecipePositionQuery);
-
-            $insertRecipePositionStmt->bindValue(':weight', $data['weight']);   //todo: validate
-            $insertRecipePositionStmt->bindValue(':recipe_id', $recipe['id']);
-            $insertRecipePositionStmt->bindValue(':reference_product_id', $data['reference_product_id']);   //todo: В класс: не понятна ошибка. И рецепты тоже.
-
-            $insertRecipePositionStmt->execute();
-        } else {
-            $recipePosition['weight'] += $data['weight'];                             //todo: validate
-
-            $updateRecipePositionQuery = 'update recipe_positions set weight = :weight where id = :id';
-            $updateRecipePositionStmt = $this->pdo->prepare($updateRecipePositionQuery);
-
-            $updateRecipePositionStmt->bindValue(':weight', $recipePosition['weight']);
-            $updateRecipePositionStmt->bindValue(':id', $recipePosition['id']);
-
-            $updateRecipePositionStmt->execute();
-        }
-
-        $addedWeight = $data['weight'];
+        $addedWeight = $this->recipeService->addProduct($data['id'], $data['reference_product_id'], $data['weight']);
         $this->responseBuilder->set($addedWeight);
 
         return $this->responseBuilder->build($response);
@@ -150,36 +132,7 @@ class RecipeController
 
         //todo: Проверка возможности редактирования рецепта.
 
-        $recipePosition = $this->dataManager->findRecipePositionByProduct($recipe['id'], $data['reference_product_id']);
-        $removedWeight = 0;
-        if ($recipePosition) {
-            if ($recipePosition['weight'] >= $data['weight']) {
-                $recipePosition['weight'] -= $data['weight'];
-                $removedWeight = $data['weight'];
-            } else {
-                $removedWeight = $recipePosition['weight'];
-                $recipePosition['weight'] = 0 ;
-            }
-
-            if ($recipePosition['weight'] > 0) {
-                $updateRecipePositionQuery = 'update recipe_positions set weight = :weight where id = :id';
-                $updateRecipePositionStmt = $this->pdo->prepare($updateRecipePositionQuery);
-
-                $updateRecipePositionStmt->bindValue(':weight', $recipePosition['weight']);
-                $updateRecipePositionStmt->bindValue(':id', $recipePosition['id']);
-
-                $updateRecipePositionStmt->execute();
-            } else {
-                $deleteRecipePositionQuery = 'delete from recipe_positions where id = :id';
-                $deleteRecipePositionStmt = $this->pdo->prepare($deleteRecipePositionQuery);
-
-                $deleteRecipePositionStmt->bindValue(':id', $recipePosition['id']);
-
-                $deleteRecipePositionStmt->execute();
-            }
-        }
-
-        $this->responseBuilder->set($removedWeight);
+        $this->responseBuilder->set($this->recipeService->removeProduct($data['id'], $data['reference_product_id'], $data['weight']));
 
         return $this->responseBuilder->build($response);
     }
@@ -278,27 +231,46 @@ class RecipeController
             $insertRecipePositionStmt->execute();
         }
 
-        $head = $this->dataManager->findHeadRecipeCommit($recipe['id']);
-        if (!$head) {
-            $insertHeadQuery = 'insert into heads (recipe_id, recipe_commit_id) values (:recipe_id, :recipe_commit_id)';
-            $insertHeadStmt = $this->pdo->prepare($insertHeadQuery);
-
-            $insertHeadStmt->bindValue('recipe_id', $recipe['id']);
-            $insertHeadStmt->bindValue('recipe_commit_id', $recipeCommitID);
-
-            $insertHeadStmt->execute();
-        } else {
-            $updateHeadQuery = 'update heads set recipe_commit_id = :recipe_commit_id where recipe_id = :recipe_id';
-            $updateHeadStmt = $this->pdo->prepare($updateHeadQuery);
-
-            $updateHeadStmt->bindValue('recipe_id', $recipe['id']);
-            $updateHeadStmt->bindValue('recipe_commit_id', $recipeCommitID);
-
-            $updateHeadStmt->execute();
-        }
+        $this->recipeService->updateHead($recipe['id'], $recipeCommitID);
 
         $this->pdo->commit();
 
         return $this->responseBuilder->set($recipeCommitID)->build($response);
+    }
+
+    public function branch(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $requestData = $request->getQueryParams();
+
+        if (!$this->validator->validateRequiredKeys($requestData, [
+            'id',
+            'name',
+        ])) {
+            return $this->responseBuilder
+                ->addError('Не указаны обязательные параметры.')
+                ->build($response);
+        }
+
+        $data = [
+            'id' => intval($requestData['id']),
+            'name' => $requestData['name'],
+        ];
+
+        $recipe = $this->dataManager->findOneRecipe($data['id']);
+        if (!$recipe) {
+            return $this->responseBuilder
+                ->addError('Рецепт не найден.')
+                ->build($response);
+        }
+
+        $this->pdo->beginTransaction();
+
+        $newRecipeID = $this->recipeService->copy($data['id'], $data['name']);
+
+        $this->pdo->commit();
+
+        $this->responseBuilder->set($newRecipeID);
+
+        return $this->responseBuilder->build($response);
     }
 }

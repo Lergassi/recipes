@@ -15,26 +15,6 @@ class RecipeFactory
         $this->dataManager = $dataManager;
     }
 
-    /**
-     * @deprecated
-     * @param int $branchID
-     * @param bool $isMain
-     * @return int
-     */
-    public function _createByBranch(int $branchID, bool $isMain = false): int
-    {
-        $query = 'insert into recipes (is_main, dish_version_branch_id) VALUES (:is_main, :dish_version_branch_id)';
-
-        $stmt = $this->pdo->prepare($query);
-
-        $stmt->bindValue(':is_main', intval($isMain));
-        $stmt->bindValue(':dish_version_branch_id', $branchID);
-
-        $stmt->execute();
-
-        return $this->pdo->lastInsertId();
-    }
-
     public function create(string $name, int $dishVersionID): int
     {
         $query = 'insert into recipes (name, dish_version_id) VALUES (:name, :dish_version_id)';
@@ -47,24 +27,5 @@ class RecipeFactory
         $stmt->execute();
 
         return $this->pdo->lastInsertId();
-    }
-
-//    public function copyByRecipe(int $ID): int {return 0;}
-//    public function copyByCommit(int $commitID): int {return 0;}
-//    public function commit(int $commitID): int {return 0;}
-    public function copyByBranch(int $branchID): int
-    {
-        $branch = $this->dataManager->findOneBranch($branchID); //todo: Тут по идеи должен быть кеш внутри. И когда происходит запрос, например в модуле безопасноти, то если логика доходит до сюда, то повторный запрос не делается.
-        if (!$branch) throw new \Exception('Ветка не найдена.');
-
-        $recipe = $this->dataManager->findMainRecipeByBranch($branchID);
-        $recipePositions = $this->dataManager->findRecipePositions($branchID);
-        dump($recipe);
-        dump($recipePositions);
-
-//        $insertRecipeQuery = 'insert into recipes (is_main, dish_version_branch_id) VALUES (:is_main, :dish_version_branch_id)';
-//        $insertRecipePositionQuery = 'insert into recipe_positions (weight, reference_product_id, recipe_id) VALUES (:weight, :reference_product_id, :recipe_id)';
-
-        return 0;
     }
 }

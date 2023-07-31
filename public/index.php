@@ -74,7 +74,7 @@ $app->get('/recipe/get', \App\Controllers\RecipeController::class . ':get');
 $app->get('/recipe/add_product', \App\Controllers\RecipeController::class . ':addProduct');
 $app->get('/recipe/remove_product', \App\Controllers\RecipeController::class . ':removeProduct');
 $app->get('/recipe/commit', \App\Controllers\RecipeController::class . ':commit');
-//$app->get('/recipe/create_branch', \App\Controllers\RecipeController::class . ':createBranch');
+$app->get('/recipe/branch', \App\Controllers\RecipeController::class . ':branch');
 
 //----------------------------------------------------------------
 // sandbox routes

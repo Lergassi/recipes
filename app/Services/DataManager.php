@@ -154,10 +154,10 @@ class DataManager
         return $stmt->fetchAll();
     }
 
-    //todo: Наверное можно оставить только head. Если head нету - значит рецепт новый. Иначе head всегда указывает на последний коммит. И коммит не предыдущий а текущий.
+    //todo: Наверное можно оставить только head. Если head нету - значит рецепт новый. Иначе head всегда указывает на последний коммит.
     public function findPreviousRecipeCommit(int $recipeID): array|null
     {
-        $query = 'select rc.* from recipe_commits rc left join heads h on rc.id = h.recipe_commit_id where rc.recipe_id = :recipe_id and rc.id = h.recipe_commit_id';
+        $query = 'select rc.* from recipe_commits rc right join heads h on rc.id = h.recipe_commit_id where h.recipe_id = :recipe_id';
         $stmt = $this->pdo->prepare($query);
 
         $stmt->bindValue('recipe_id', $recipeID);
