@@ -48,12 +48,12 @@ $app->addErrorMiddleware(true, false, false);
 $app->get('/', \App\Controllers\MainController::class . ':homepage');
 
 $app->get('/quality/create', \App\Controllers\QualityController::class . ':create');
-$app->get('/quality/get', \App\Controllers\QualityController::class . ':get');
+$app->get('/qualities', \App\Controllers\QualityController::class . ':all');
 $app->get('/quality/update', \App\Controllers\QualityController::class . ':update');
 $app->get('/quality/delete', \App\Controllers\QualityController::class . ':delete');
 
 $app->get('/reference_product/create', \App\Controllers\ReferenceProductController::class . ':create');
-$app->get('/reference_product/get', \App\Controllers\ReferenceProductController::class . ':get');
+$app->get('/reference_products', \App\Controllers\ReferenceProductController::class . ':all');
 $app->get('/reference_product/update', \App\Controllers\ReferenceProductController::class . ':update');
 $app->get('/reference_product/delete', \App\Controllers\ReferenceProductController::class . ':delete');
 
@@ -69,14 +69,12 @@ $app->get('/dish_version/get', \App\Controllers\DishVersionController::class . '
 $app->get('/dish_version/update', \App\Controllers\DishVersionController::class . ':update');
 $app->get('/dish_version/delete', \App\Controllers\DishVersionController::class . ':delete');
 
-//$app->get('/recipe/add_product', \App\Controllers\RecipeController::class . ':addProduct');
-//$app->get('/recipe/remove_product', \App\Controllers\RecipeController::class . ':removeProduct');
-
-$app->get('/branch/create', \App\Controllers\BranchController::class . ':create');
-$app->get('/branch/get', \App\Controllers\BranchController::class . ':get');
-$app->get('/branch/add_product', \App\Controllers\BranchController::class . ':addProduct');
-$app->get('/branch/remove_product', \App\Controllers\BranchController::class . ':removeProduct');
-$app->get('/branch/commit', \App\Controllers\BranchController::class . ':commit');
+$app->get('/recipe/create', \App\Controllers\RecipeController::class . ':create');
+$app->get('/recipe/get', \App\Controllers\RecipeController::class . ':get');
+$app->get('/recipe/add_product', \App\Controllers\RecipeController::class . ':addProduct');
+$app->get('/recipe/remove_product', \App\Controllers\RecipeController::class . ':removeProduct');
+$app->get('/recipe/commit', \App\Controllers\RecipeController::class . ':commit');
+//$app->get('/recipe/create_branch', \App\Controllers\RecipeController::class . ':createBranch');
 
 //----------------------------------------------------------------
 // sandbox routes

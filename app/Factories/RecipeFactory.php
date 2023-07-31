@@ -15,8 +15,13 @@ class RecipeFactory
         $this->dataManager = $dataManager;
     }
 
-    //todo: Можно сделать так: рецепты - это только главные. Копии идут отдельно и не создаются, а копируются из рецептов. Варианты метода copy($recipeID), commit($recipeID).
-    public function create(int $branchID, bool $isMain = false): int
+    /**
+     * @deprecated
+     * @param int $branchID
+     * @param bool $isMain
+     * @return int
+     */
+    public function _createByBranch(int $branchID, bool $isMain = false): int
     {
         $query = 'insert into recipes (is_main, dish_version_branch_id) VALUES (:is_main, :dish_version_branch_id)';
 
@@ -24,6 +29,20 @@ class RecipeFactory
 
         $stmt->bindValue(':is_main', intval($isMain));
         $stmt->bindValue(':dish_version_branch_id', $branchID);
+
+        $stmt->execute();
+
+        return $this->pdo->lastInsertId();
+    }
+
+    public function create(string $name, int $dishVersionID): int
+    {
+        $query = 'insert into recipes (name, dish_version_id) VALUES (:name, :dish_version_id)';
+
+        $stmt = $this->pdo->prepare($query);
+
+        $stmt->bindValue(':name', $name);
+        $stmt->bindValue(':dish_version_id', $dishVersionID);
 
         $stmt->execute();
 
@@ -39,7 +58,7 @@ class RecipeFactory
         if (!$branch) throw new \Exception('Ветка не найдена.');
 
         $recipe = $this->dataManager->findMainRecipeByBranch($branchID);
-        $recipePositions = $this->dataManager->findRecipePositionsByBranch($branchID);
+        $recipePositions = $this->dataManager->findRecipePositions($branchID);
         dump($recipe);
         dump($recipePositions);
 

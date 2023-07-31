@@ -46,18 +46,17 @@ class DishVersionController
         if (!$this->validator->validateRequiredKeys($requestData, [
             'name',
             'dish_id',
-            'quality_id',
         ])) {
-            $this->responseBuilder->addError('Не указаны обязательные параметры.');
-
-            return $this->responseBuilder->build($response);
+            return $this->responseBuilder
+                ->addError('Не указаны обязательные параметры.')
+                ->build($response);
         }
 
         $data = [
             'name' => $requestData['name'],
             'alias' => $requestData['alias'] ?? $this->aliasGenerator->generate($requestData['name'], 1),   //todo: index получить на основе бд.
             'dish_id' => intval($requestData['dish_id']),
-            'quality_id' => intval($requestData['quality_id']),
+            'quality_id' => isset($requestData['quality_id']) ? intval($requestData['quality_id']) : $this->dataManager->findOneQualityByAlias('common')['id'], //todo: Сделать значения по умолчанию и/или удобное использование alias в коде.
         ];
 
         //todo: validate data
@@ -77,8 +76,7 @@ class DishVersionController
 
         $dishVersionID = $this->pdo->lastInsertId();
 
-        $branchID = $this->branchFactory->create($dishVersionID, 'main');
-        $this->recipeFactory->create($branchID, true);
+        $this->recipeFactory->create('Оригинальный', $dishVersionID);
 
         $this->pdo->commit();
 
@@ -94,24 +92,19 @@ class DishVersionController
         if (!$this->validator->validateRequiredKeys($requestData, [
             'dish_id',
         ])) {
-            $this->responseBuilder->addError('Не указаны обязательные параметры.');
-
-            return $this->responseBuilder->build($response);
+            return $this->responseBuilder
+                ->addError('Не указаны обязательные параметры.')
+                ->build($response);
         }
 
-        $query = 'select dv.id, dv.name, d.id as d_id, dv.alias, dv.quality_id from dish_versions dv left join dishes d on dv.dish_id = d.id left join qualities q on d.quality_id = q.id where dish_id = :dish_id order by d.name, dv.name, q.sort';
+        $dishVersions = $this->dataManager->findDishVersions(intval($requestData['dish_id']));
+        foreach ($dishVersions as &$dishVersion) {
+            $dishVersion['recipes'] = $this->dataManager->findRecipes($dishVersion['id']);
+        }
 
-        $stmt = $this->pdo->prepare($query);
-        $stmt->bindValue('dish_id', intval($requestData['dish_id']));
-        $stmt->execute();
+        $this->responseBuilder->set($dishVersions);
 
-        $result = $stmt->fetchAll();
-
-        $this->responseBuilder->set($result);
-
-        $response = $this->responseBuilder->build($response);
-
-        return $response;
+        return $this->responseBuilder->build($response);
     }
 
     public function get(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -121,9 +114,9 @@ class DishVersionController
         if (!$this->validator->validateRequiredKeys($requestData, [
             'id',
         ])) {
-            $this->responseBuilder->addError('Не указаны обязательные параметры.');
-
-            return $this->responseBuilder->build($response);
+            return $this->responseBuilder
+                ->addError('Не указаны обязательные параметры.')
+                ->build($response);
         }
 
         $data = [
@@ -132,11 +125,12 @@ class DishVersionController
 
         $dishVersion = $this->dataManager->findOneDishVersion($data['id']);
         if (!$dishVersion) {
-            return $this->responseBuilder->addError('Версия рецепта не найдена.')->build($response);
+            return $this->responseBuilder
+                ->addError('Версия блюда не найдена.')
+                ->build($response);
         }
 
-        $branches = $this->dataManager->findBranches($dishVersion['id']);
-        $dishVersion['branches'] = $branches;
+        $dishVersion['recipes'] = $this->dataManager->findRecipes($dishVersion['id']);
 
         $this->responseBuilder->set($dishVersion);
 
@@ -153,9 +147,9 @@ class DishVersionController
             'dish_id',
             'quality_id',
         ])) {
-            $this->responseBuilder->addError('Не указаны обязательные параметры.');
-
-            return $this->responseBuilder->build($response);
+            return $this->responseBuilder
+                ->addError('Не указаны обязательные параметры.')
+                ->build($response);
         }
 
         $data = [
@@ -193,9 +187,9 @@ class DishVersionController
         if (!$this->validator->validateRequiredKeys($requestData, [
             'id',
         ])) {
-            $this->responseBuilder->addError('Не указаны обязательные параметры.');
-
-            return $this->responseBuilder->build($response);
+            return $this->responseBuilder
+                ->addError('Не указаны обязательные параметры.')
+                ->build($response);
         }
 
         $ID = intval($request->getQueryParams()['id']);
@@ -212,8 +206,7 @@ class DishVersionController
         $stmt->execute();
 
         $this->responseBuilder->set($stmt->rowCount());
-        $response = $this->responseBuilder->build($response);
 
-        return $response;
+        return $this->responseBuilder->build($response);
     }
 }

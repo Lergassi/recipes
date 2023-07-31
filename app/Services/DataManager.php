@@ -89,15 +89,16 @@ class DataManager
     }
 
     /**
-     * @param int $ID
+     * @param int $recipeID
      * @return array|false
      */
-    public function findRecipePositionsByBranch(int $ID)
+    public function findRecipePositions(int $recipeID)
     {
-        $query = 'select rp.* from recipe_positions rp left join recipes r on rp.recipe_id = r.id left join dish_version_branches dvb on r.dish_version_branch_id = dvb.id left join reference_products rfp on rp.reference_product_id = rfp.id where dvb.id = :id order by rfp.sort';
+        $query = 'select rp.*, r.id as recipe_id from recipe_positions rp left join recipes r on rp.recipe_id = r.id left join reference_products rfp on rp.reference_product_id = rfp.id where rp.recipe_id = :recipe_id order by rfp.sort';
         $stmt = $this->pdo->prepare($query);
-        $stmt->bindValue(':id', $ID);
-//        $stmt->bindValue(':is_main', 1);
+
+        $stmt->bindValue(':recipe_id', $recipeID);
+
         $stmt->execute();
 
         return $stmt->fetchAll();
@@ -105,15 +106,13 @@ class DataManager
 
     public function findOneDishVersion(int $ID): array|null
     {
-        $selectDishVersionQuery = 'select dv.* from dish_versions dv where dv.id = :id';
+        $query = 'select dv.* from dish_versions dv where dv.id = :id';
 
-        $selectDishVersionStmt = $this->pdo->prepare($selectDishVersionQuery);
-        $selectDishVersionStmt->bindValue('id', $ID);
-        $selectDishVersionStmt->execute();
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue('id', $ID);
+        $stmt->execute();
 
-        $dishVersion = $selectDishVersionStmt->fetch();
-
-        return $this->returnOneOrNull($dishVersion);
+        return $this->returnOneOrNull($stmt->fetch());
     }
 
     public function findBranches(int $ID)
@@ -129,5 +128,99 @@ class DataManager
     private function returnOneOrNull(mixed $target): mixed
     {
         return $target ?: null;
+    }
+
+    public function findOneQualityByAlias(string $alias)
+    {
+        $query = 'select * from qualities where alias = :alias';
+
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindValue('alias', $alias);
+        $stmt->execute();
+
+        return $this->returnOneOrNull($stmt->fetch());
+    }
+
+    public function findRecipes(int $dishVersionID)
+    {
+        $query = 'select r.* from recipes r where r.dish_version_id = :dish_version_id';
+
+        $stmt = $this->pdo->prepare($query);
+
+        $stmt->bindValue(':dish_version_id', $dishVersionID);
+
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    //todo: Наверное можно оставить только head. Если head нету - значит рецепт новый. Иначе head всегда указывает на последний коммит. И коммит не предыдущий а текущий.
+    public function findPreviousRecipeCommit(int $recipeID): array|null
+    {
+        $query = 'select rc.* from recipe_commits rc left join heads h on rc.id = h.recipe_commit_id where rc.recipe_id = :recipe_id and rc.id = h.recipe_commit_id';
+        $stmt = $this->pdo->prepare($query);
+
+        $stmt->bindValue('recipe_id', $recipeID);
+
+        $stmt->execute();
+
+        return $this->returnOneOrNull($stmt->fetch());
+    }
+
+    public function findHeadRecipeCommit(int $recipeID): array|null
+    {
+        return $this->findPreviousRecipeCommit($recipeID);
+    }
+
+    public function findOneDish(int $ID): array|null
+    {
+        $query = 'select d.* from dishes d where d.id = :id';
+        $stmt = $this->pdo->prepare($query);
+
+        $stmt->bindValue(':id', $ID);
+
+        $stmt->execute();
+
+        return $this->returnOneOrNull($stmt->fetch());
+    }
+
+    public function findDishVersions(int $dishID): array
+    {
+        $query = 'select dv.*, d.id as dish_id from dish_versions dv left join dishes d on dv.dish_id = d.id left join qualities q on d.quality_id = q.id where dish_id = :dish_id order by d.name, dv.name, q.sort';
+        $stmt = $this->pdo->prepare($query);
+
+        $stmt->bindValue('dish_id', $dishID);
+
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    public function findDishes(): array
+    {
+        $query = 'select d.* from dishes d left join qualities q on d.quality_id = q.id order by d.name, q.sort';
+        $stmt = $this->pdo->prepare($query);
+
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    public function findQualities(): array
+    {
+        $query = 'select * from qualities order by sort';
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    public function findReferenceProducts(): array
+    {
+        $query = 'select * from reference_products order by name';
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
     }
 }

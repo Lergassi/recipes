@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Services\AliasGenerator;
+use App\Services\DataManager;
 use App\Services\ResponseBuilder;
 use App\Services\Validator;
 use Psr\Http\Message\ResponseInterface;
@@ -10,14 +12,24 @@ use Psr\Http\Message\ServerRequestInterface;
 class DishController
 {
     private \PDO $pdo;
+    private DataManager $dataManager;
+    private AliasGenerator $aliasGenerator;
     private ResponseBuilder $responseBuilder;
     private Validator $validator;
 
-    public function __construct(\PDO $pdo, ResponseBuilder $responseBuilder, Validator $validator)
+    public function __construct(
+        \PDO            $pdo,
+        ResponseBuilder $responseBuilder,
+        Validator       $validator,
+        AliasGenerator  $aliasGenerator,
+        DataManager     $dataManager,
+    )
     {
         $this->pdo = $pdo;
         $this->responseBuilder = $responseBuilder;
         $this->validator = $validator;
+        $this->aliasGenerator = $aliasGenerator;
+        $this->dataManager = $dataManager;
     }
 
     public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -26,18 +38,16 @@ class DishController
 
         if (!$this->validator->validateRequiredKeys($requestData, [
             'name',
-            'alias',
-            'quality_id',
         ])) {
-            $this->responseBuilder->addError('Не указаны обязательные параметры.');
-
-            return $this->responseBuilder->build($response);
+            return $this->responseBuilder
+                ->addError('Не указаны обязательные параметры.')
+                ->build($response);
         }
 
         $data = [
             'name' => $requestData['name'],
-            'alias' => $requestData['alias'],
-            'quality_id' => intval($requestData['quality_id']),
+            'alias' => $requestData['alias'] ?? $this->aliasGenerator->generate($requestData['name'], 1),
+            'quality_id' => isset($requestData['quality_id']) ? intval($requestData['quality_id']) : $this->dataManager->findOneQualityByAlias('common')['id'], //todo: Сделать значения по умолчанию и/или удобное использование alias в коде.
         ];
 
         //todo: validate data
@@ -59,13 +69,14 @@ class DishController
 
     public function all(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $query = 'select d.* from dishes d left join qualities q on d.quality_id = q.id order by d.name, q.sort';
-        $stmt = $this->pdo->prepare($query);
-        $stmt->execute();
+        $dishes = $this->dataManager->findDishes();
 
-        $result = $stmt->fetchAll();
+        foreach ($dishes as &$dish) {
+            $dishVersions = $this->dataManager->findDishVersions($dish['id']);
+            $dish['versions'] = $dishVersions;
+        }
 
-        $this->responseBuilder->set($result);
+        $this->responseBuilder->set($dishes);
 
         return $this->responseBuilder->build($response);
     }
@@ -77,19 +88,22 @@ class DishController
         if (!$this->validator->validateRequiredKeys($requestData, [
             'id',
         ])) {
-            $this->responseBuilder->addError('Не указаны обязательные параметры.');
-
-            return $this->responseBuilder->build($response);
+            return $this->responseBuilder
+                ->addError('Не указаны обязательные параметры.')
+                ->build($response);
         }
 
-        $query = 'select d.* from dishes d where d.id = :id';
-        $stmt = $this->pdo->prepare($query);
-        $stmt->bindValue(':id', $requestData['id']);
-        $stmt->execute();
+        $dish = $this->dataManager->findOneDish(intval($requestData['id']));
+        if (!$dish) {
+            return $this->responseBuilder
+                ->addError('Блюдо не найдено.')
+                ->build($response);
+        }
 
-        $result = $stmt->fetch();
+        $dishVersions = $this->dataManager->findDishVersions($dish['id']);
+        $dish['versions'] = $dishVersions;
 
-        $this->responseBuilder->set($result);
+        $this->responseBuilder->set($dish);
 
         return $this->responseBuilder->build($response);
     }
@@ -104,9 +118,9 @@ class DishController
             'alias',
             'quality_id',
         ])) {
-            $this->responseBuilder->addError('Не указаны обязательные параметры.');
-
-            return $this->responseBuilder->build($response);
+            return $this->responseBuilder
+                ->addError('Не указаны обязательные параметры.')
+                ->build($response);
         }
 
         $data = [
@@ -141,9 +155,9 @@ class DishController
         if (!$this->validator->validateRequiredKeys($requestData, [
             'id',
         ])) {
-            $this->responseBuilder->addError('Не указаны обязательные параметры.');
-
-            return $this->responseBuilder->build($response);
+            return $this->responseBuilder
+                ->addError('Не указаны обязательные параметры.')
+                ->build($response);
         }
 
         $ID = intval($request->getQueryParams()['id']);

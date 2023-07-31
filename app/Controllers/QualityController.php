@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Services\DataManager;
 use App\Services\ResponseBuilder;
 use App\Services\Validator;
 use Psr\Http\Message\ResponseInterface;
@@ -10,14 +11,16 @@ use Psr\Http\Message\ServerRequestInterface;
 class QualityController
 {
     private \PDO $pdo;
+    private DataManager $dataManager;
     private ResponseBuilder $responseBuilder;
     private Validator $validator;
 
-    public function __construct(\PDO $pdo, ResponseBuilder $responseBuilder, Validator $validator)
+    public function __construct(\PDO $pdo, ResponseBuilder $responseBuilder, Validator $validator, DataManager $dataManager)
     {
         $this->pdo = $pdo;
         $this->responseBuilder = $responseBuilder;
         $this->validator = $validator;
+        $this->dataManager = $dataManager;
     }
 
     public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -29,9 +32,9 @@ class QualityController
             'alias',
             'sort',
         ])) {
-            $this->responseBuilder->addError('Не указаны обязательные параметры.');
-
-            return $this->responseBuilder->build($response);
+            return $this->responseBuilder
+                ->addError('Не указаны обязательные параметры.')
+                ->build($response);
         }
 
         $data = [
@@ -57,19 +60,13 @@ class QualityController
         return $this->responseBuilder->build($response);
     }
 
-    public function get(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    public function all(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $query = 'select * from qualities order by sort';
-        $stmt = $this->pdo->prepare($query);
-        $stmt->execute();
+        $qualities = $this->dataManager->findQualities();
 
-        $result = $stmt->fetchAll();
+        $this->responseBuilder->set($qualities);
 
-        $this->responseBuilder->set($result);
-
-        $response = $this->responseBuilder->build($response);
-
-        return $response;
+        return $this->responseBuilder->build($response);
     }
 
     public function update(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -82,9 +79,9 @@ class QualityController
             'alias',
             'sort',
         ])) {
-            $this->responseBuilder->addError('Не указаны обязательные параметры.');
-
-            return $this->responseBuilder->build($response);
+            return $this->responseBuilder
+                ->addError('Не указаны обязательные параметры.')
+                ->build($response);
         }
 
         $data = [
@@ -120,9 +117,9 @@ class QualityController
         if (!$this->validator->validateRequiredKeys($requestData, [
             'id',
         ])) {
-            $this->responseBuilder->addError('Не указаны обязательные параметры.');
-
-            return $this->responseBuilder->build($response);
+            return $this->responseBuilder
+                ->addError('Не указаны обязательные параметры.')
+                ->build($response);
         }
 
         $ID = intval($request->getQueryParams()['id']);
