@@ -223,4 +223,109 @@ class DataManager
 
         return $stmt->fetchAll();
     }
+
+    public function findCommitRecipePositions(int $recipeCommitID): array
+    {
+        $query = 'select * from recipe_commit_positions where recipe_commit_id = :recipe_commit_id';
+        $stmt = $this->pdo->prepare($query);
+
+        $stmt->bindValue(':recipe_commit_id', $recipeCommitID);
+
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    public function findDiffWithCurrentRecipe(int $recipeID): array
+    {
+        $query =
+            'select
+                rp.reference_product_id
+                ,rfp.name
+                ,rcp.weight     # было  если null удалено
+                ,rp.weight      # стало
+            from recipe_positions rp
+                left join reference_products rfp on rp.reference_product_id = rfp.id
+                left join recipes r on rp.recipe_id = r.id
+                left join heads h on r.id = h.recipe_id
+                left join recipe_commits rc on h.recipe_commit_id = rc.id
+                left join recipe_commit_positions rcp on rc.id = rcp.recipe_commit_id and rp.reference_product_id = rcp.reference_product_id
+            where
+                r.id = :recipe_id
+                and rp.weight <> rcp.weight
+                or rcp.weight is null
+            union
+            select
+                rcp.reference_product_id
+                ,rfp.name
+                ,rcp.weight     # было
+                ,rp.weight      # стало если null удалено
+            from recipe_commit_positions rcp
+                left join reference_products rfp on rcp.reference_product_id = rfp.id
+                left join heads h on rcp.recipe_commit_id = h.recipe_commit_id
+                left join recipe_commits rc on rcp.recipe_commit_id = rc.id and rc.id = h.recipe_commit_id # !!!
+                left join recipes r on rc.recipe_id = r.id
+                left join recipe_positions rp on r.id = rp.recipe_id and rcp.reference_product_id = rp.reference_product_id
+            where
+                r.id = :recipe_id
+                and rp.weight is null'
+        ;
+
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindParam(':recipe_id', $recipeID);
+
+        $stmt->execute();
+
+        $fetch = $stmt->fetchAll();
+
+        return $fetch;
+    }
+
+    public function hasDiffWithCurrentRecipe(int $recipeID): bool
+    {
+        $query =
+            'select count(*) as count
+            from (
+                select
+                    rp.reference_product_id
+                    ,rfp.name
+                    ,rcp.weight     # было  если null удалено
+                    ,rp.weight as rp_weight      # стало
+                from recipe_positions rp
+                    left join reference_products rfp on rp.reference_product_id = rfp.id
+                    left join recipes r on rp.recipe_id = r.id
+                    left join heads h on r.id = h.recipe_id
+                    left join recipe_commits rc on h.recipe_commit_id = rc.id
+                    left join recipe_commit_positions rcp on rc.id = rcp.recipe_commit_id and rp.reference_product_id = rcp.reference_product_id
+                where
+                    r.id = :recipe_id
+                    and rp.weight <> rcp.weight
+                    or rcp.weight is null
+                union
+                select
+                    rcp.reference_product_id
+                    ,rfp.name
+                    ,rcp.weight     # было
+                    ,rp.weight      # стало если null удалено
+                from recipe_commit_positions rcp
+                    left join reference_products rfp on rcp.reference_product_id = rfp.id
+                    left join heads h on rcp.recipe_commit_id = h.recipe_commit_id
+                    left join recipe_commits rc on rcp.recipe_commit_id = rc.id and rc.id = h.recipe_commit_id # !!!
+                    left join recipes r on rc.recipe_id = r.id
+                    left join recipe_positions rp on r.id = rp.recipe_id and rcp.reference_product_id = rp.reference_product_id
+                where
+                    r.id = :recipe_id
+                    and rp.weight is null
+                 ) as sum_table'
+        ;
+
+        $stmt = $this->pdo->prepare($query);
+        $stmt->bindParam(':recipe_id', $recipeID);
+
+        $stmt->execute();
+
+        $fetch = $stmt->fetch();
+
+        return $fetch['count'] !== 0;
+    }
 }

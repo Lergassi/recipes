@@ -9,7 +9,7 @@ class RecipeFactory
     private \PDO $pdo;
     private DataManager $dataManager;
 
-    public function __construct(\PDO $pdo, \App\Services\DataManager $dataManager)
+    public function __construct(\PDO $pdo, DataManager $dataManager)
     {
         $this->pdo = $pdo;
         $this->dataManager = $dataManager;

@@ -77,27 +77,28 @@ class RecipeService
         return $removedWeight;
     }
 
-    public function copy(int $recipeID, string $name): int
-    {
-        $recipe = $this->dataManager->findOneRecipe($recipeID);
-        if (!$recipe) throw new \Exception('Рецепт не найден.');
-
-        $head = $this->dataManager->findHeadRecipeCommit($recipeID);
-        if (!$head) throw new \Exception('Нельзя скопировать рецепт без коммита.');
-
-        //todo: Проверка на изменения с последнего коммита. С изменениями нельзя скопировать рецепт.
-
-        $newRecipeID = $this->recipeFactory->create($name, $recipe['dish_version_id']);
-
-        $recipePositions = $this->dataManager->findRecipePositions($recipeID);
-        foreach ($recipePositions as $recipePosition) {
-            $this->addProduct($newRecipeID, $recipePosition['reference_product_id'], $recipePosition['weight']);
-        }
-
-        $this->updateHead($newRecipeID, $head['id']);
-
-        return $newRecipeID;
-    }
+    //todo: Вариант для поиска решения проверок и возвращения ошибок.
+//    public function branch(int $recipeID, string $name): int
+//    {
+//        $recipe = $this->dataManager->findOneRecipe($recipeID);
+//        if (!$recipe) throw new \Exception('Рецепт не найден.');
+//
+//        $head = $this->dataManager->findHeadRecipeCommit($recipeID);
+//        if (!$head) throw new \Exception('Нельзя скопировать рецепт без коммита.');
+//
+//        if ($this->dataManager->hasDiffWithCurrentRecipe($recipeID)) throw new \Exception('Нельзя создать рецепт. Текущий рецепт имеет незафиксированные изменения.');
+//
+//        $newRecipeID = $this->recipeFactory->create($name, $recipe['dish_version_id']);
+//
+//        $recipePositions = $this->dataManager->findRecipePositions($recipeID);
+//        foreach ($recipePositions as $recipePosition) {
+//            $this->addProduct($newRecipeID, $recipePosition['reference_product_id'], $recipePosition['weight']);
+//        }
+//
+//        $this->updateHead($newRecipeID, $head['id']);
+//
+//        return $newRecipeID;
+//    }
 
     public function updateHead(int $recipeID, int $recipeCommitID): int
     {

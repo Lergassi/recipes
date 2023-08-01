@@ -25,7 +25,7 @@ $containerBuilder->addDefinitions([
             $_ENV['APP_DB_PASSWORD'] ?? '',
             [
                 \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
-                \PDO::ATTR_EMULATE_PREPARES => false,
+//                \PDO::ATTR_EMULATE_PREPARES => false,
                 \PDO::ATTR_STRINGIFY_FETCHES => false,
             ]
         );

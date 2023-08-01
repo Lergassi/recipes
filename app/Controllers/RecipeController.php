@@ -40,33 +40,31 @@ class RecipeController
         $this->recipeService = $recipeService;
     }
 
-//    public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
-//    {
-//        $requestData = $request->getQueryParams();
-//
-//        if (!$this->validator->validateRequiredKeys($requestData, [
-//            'dish_version_id',
-//            'name',
-//            'quality_id',
-//        ])) {
-//            $this->responseBuilder->addError('Не указаны обязательные параметры.');
-//
-//            return $this->responseBuilder->build($response);
-//        }
-//
-//        $data = [
-//            'dish_version_id' => intval($requestData['dish_version_id']),
-//            'name' => $requestData['name'],
-//            'quality_id' => intval($requestData['quality_id']),
-//        ];
-//
-//        $branchID = $this->branchFactory->create($data['dish_version_id'], $data['name']);
-//        $this->recipeFactory->_createByBranch($branchID, true);
-//
-//        $this->responseBuilder->set($branchID);
-//
-//        return $this->responseBuilder->build($response);
-//    }
+    public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $requestData = $request->getQueryParams();
+
+        if (!$this->validator->validateRequiredKeys($requestData, [
+            'name',
+            'dish_version_id',
+        ])) {
+            $this->responseBuilder->addError('Не указаны обязательные параметры.');
+
+            return $this->responseBuilder->build($response);
+        }
+
+        $data = [
+            'name' => $requestData['name'],
+            'dish_version_id' => intval($requestData['dish_version_id']),
+            'quality_id' => isset($requestData['quality_id']) ? intval($requestData['quality_id']) : $this->dataManager->findOneQualityByAlias('common')['id'],
+        ];
+
+        $recipeID = $this->recipeFactory->create($data['name'], $data['dish_version_id']);
+
+        $this->responseBuilder->set($recipeID);
+
+        return $this->responseBuilder->build($response);
+    }
 
     public function addProduct(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
@@ -263,9 +261,29 @@ class RecipeController
                 ->build($response);
         }
 
+        $head = $this->dataManager->findHeadRecipeCommit($recipe['id']);
+        if (!$head) {
+            return $this->responseBuilder
+                ->addError('Нельзя создать рецепт. В рецепте нет ни одного зафиксированного изменения.')
+                ->build($response);
+        }
+
+        if ($this->dataManager->hasDiffWithCurrentRecipe($recipe['id'])) {
+            return $this->responseBuilder
+                ->addError('Нельзя создать рецепт. Текущий рецепт имеет незафиксированные изменения.')
+                ->build($response);
+        }
+
         $this->pdo->beginTransaction();
 
-        $newRecipeID = $this->recipeService->copy($data['id'], $data['name']);
+        $newRecipeID = $this->recipeFactory->create($data['name'], $recipe['dish_version_id']);
+
+        $recipePositions = $this->dataManager->findRecipePositions($recipe['id']);
+        foreach ($recipePositions as $recipePosition) {
+            $this->recipeService->addProduct($newRecipeID, $recipePosition['reference_product_id'], $recipePosition['weight']);
+        }
+
+        $this->recipeService->updateHead($newRecipeID, $head['id']);
 
         $this->pdo->commit();
 
