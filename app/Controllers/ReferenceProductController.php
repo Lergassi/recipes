@@ -39,20 +39,41 @@ class ReferenceProductController
         $data = [
             'name' => $requestData['name'],
             'alias' => $requestData['alias'],
+            'sort' => isset($requestData['sort']) ? intval($requestData['sort']) : 500,
         ];
 
         //todo: validate data
 
-        $query = 'insert into reference_products (name, alias) values (:name, :alias)';
+        $query = 'insert into reference_products (name, alias, sort) values (:name, :alias, :sort)';
 
         $stmt = $this->pdo->prepare($query);
 
         $stmt->bindValue(':name', $data['name']);
         $stmt->bindValue(':alias', $data['alias']);
+        $stmt->bindValue(':sort', $data['sort']);
 
         $stmt->execute();
 
         $this->responseBuilder->set($this->pdo->lastInsertId());
+
+        return $this->responseBuilder->build($response);
+    }
+
+    public function get(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $requestData = $request->getQueryParams();
+
+        if (!$this->validator->validateRequiredKeys($requestData, [
+            'id',
+        ])) {
+            return $this->responseBuilder
+                ->addError('Не указаны обязательные параметры.')
+                ->build($response);
+        }
+
+        $referenceProduct = $this->dataManager->findOneReferenceProduct(intval($requestData['id']));
+
+        $this->responseBuilder->set($referenceProduct);
 
         return $this->responseBuilder->build($response);
     }
@@ -74,6 +95,7 @@ class ReferenceProductController
             'id',
             'name',
             'alias',
+            'sort',
         ])) {
             return $this->responseBuilder
                 ->addError('Не указаны обязательные параметры.')
@@ -84,17 +106,19 @@ class ReferenceProductController
             'id' => intval($requestData['id']),
             'name' => $requestData['name'],
             'alias' => $requestData['alias'],
+            'sort' => intval($requestData['sort']),
         ];
 
         //todo: validate data
 
-        $query = 'update reference_products set name = :name, alias = :alias where id = :id';
+        $query = 'update reference_products set name = :name, alias = :alias, sort = :sort where id = :id';
 
         $stmt = $this->pdo->prepare($query);
 
         $stmt->bindValue(':id', $data['id']);
         $stmt->bindValue(':name', $data['name']);
         $stmt->bindValue(':alias', $data['alias']);
+        $stmt->bindValue(':sort', $data['sort']);
 
         $stmt->execute();
 

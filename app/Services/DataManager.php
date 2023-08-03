@@ -206,6 +206,18 @@ class DataManager
         return $stmt->fetchAll();
     }
 
+    public function findOneQuality(int $ID): array|null
+    {
+        $query = 'select * from qualities where id = :id';
+        $stmt = $this->pdo->prepare($query);
+
+        $stmt->bindValue(':id', $ID);
+
+        $stmt->execute();
+
+        return $this->returnOneOrNull($stmt->fetch());
+    }
+
     public function findQualities(): array
     {
         $query = 'select * from qualities order by sort';
@@ -215,9 +227,21 @@ class DataManager
         return $stmt->fetchAll();
     }
 
+    public function findOneReferenceProduct(int $ID): array
+    {
+        $query = 'select id, name, alias, sort from reference_products where id = :id';
+        $stmt = $this->pdo->prepare($query);
+
+        $stmt->bindValue(':id', $ID);
+
+        $stmt->execute();
+
+        return $this->returnOneOrNull($stmt->fetch());
+    }
+
     public function findReferenceProducts(): array
     {
-        $query = 'select * from reference_products order by name';
+        $query = 'select id, name, alias, sort from reference_products order by name';
         $stmt = $this->pdo->prepare($query);
         $stmt->execute();
 

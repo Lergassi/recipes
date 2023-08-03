@@ -13,6 +13,6 @@ require(
     function(
         appBundle,
         ) {
-
+        // console.log(appBundle);
     }
 );

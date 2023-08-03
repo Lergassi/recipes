@@ -49,11 +49,13 @@ $app->get('/', \App\Controllers\MainController::class . ':homepage');
 
 $app->get('/quality/create', \App\Controllers\QualityController::class . ':create');
 $app->get('/qualities', \App\Controllers\QualityController::class . ':all');
+$app->get('/quality/get', \App\Controllers\QualityController::class . ':get');
 $app->get('/quality/update', \App\Controllers\QualityController::class . ':update');
 $app->get('/quality/delete', \App\Controllers\QualityController::class . ':delete');
 
 $app->get('/reference_product/create', \App\Controllers\ReferenceProductController::class . ':create');
 $app->get('/reference_products', \App\Controllers\ReferenceProductController::class . ':all');
+$app->get('/reference_product/get', \App\Controllers\ReferenceProductController::class . ':get');
 $app->get('/reference_product/update', \App\Controllers\ReferenceProductController::class . ':update');
 $app->get('/reference_product/delete', \App\Controllers\ReferenceProductController::class . ':delete');
 

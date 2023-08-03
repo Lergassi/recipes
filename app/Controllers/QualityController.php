@@ -69,6 +69,25 @@ class QualityController
         return $this->responseBuilder->build($response);
     }
 
+    public function get(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $requestData = $request->getQueryParams();
+
+        if (!$this->validator->validateRequiredKeys($requestData, [
+            'id',
+        ])) {
+            return $this->responseBuilder
+                ->addError('Не указаны обязательные параметры.')
+                ->build($response);
+        }
+
+        $quality = $this->dataManager->findOneQuality(intval($requestData['id']));
+
+        $this->responseBuilder->set($quality);
+
+        return $this->responseBuilder->build($response);
+    }
+
     public function update(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();

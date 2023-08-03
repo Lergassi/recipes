@@ -1,12 +1,21 @@
+* {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;    /* todo: Отдельные размеры для заголовков. */
+}
+
 .base-table {
     border-collapse: collapse;
     border: 1px solid #a1a1a1;
 }
 
+.base-table th {
+    text-align: left;
+}
+
 .base-table td,
 .base-table th {
     border: 1px solid #a1a1a1;
-    padding: 2px 6px;
+    padding: 4px 8px;
 }
 
 /* dev */
