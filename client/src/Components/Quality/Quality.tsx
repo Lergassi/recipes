@@ -2,9 +2,10 @@ import {useEffect, useState} from 'react';
 import _ from 'lodash';
 import CreateQualityForm from './CreateQualityForm.js';
 import EditQualityForm from './EditQualityForm.js';
+import Api from '../../Api.js';
 
 interface QualityProps {
-    host: string;
+    api: Api;
 }
 
 export default function Quality(props: QualityProps) {
@@ -20,55 +21,25 @@ export default function Quality(props: QualityProps) {
     }, []);
 
     function fetchItems() {
-        let url = props.host + '/qualities';
-        fetch(url)
-            .then((value) => {
-                value.json()
-                    .then((value) => {
-                        if (value.hasOwnProperty('error')) throw new Error(value.error);
-                        if (!value.hasOwnProperty('response')) throw new Error('Ошибка. Ответ от сервера не верный. Ответ не содержит значения response.');
-
-                        setQualities(value.response);
-                    })
-                    .catch((reason) => {
-                        console.log('error', reason);
-                    })
-            })
-            .catch((reason) => {
-                console.log('error', reason);
-            })
-        ;
+        props.api.request('/qualities', (response) => {
+            setQualities(response);
+        });
     }
 
-    function deleteHandle(ID, event) {
+    function deleteHandle(ID: number, event) {
         event.preventDefault();
-        let url = props.host + '/quality/delete?' + new URLSearchParams({
-            id: ID,
+
+        props.api.request('/quality/delete?' + new URLSearchParams({
+            id: String(ID),
+        }), (response) => {
+            if (Number(response) === 1) {
+                let newQualities = [...qualities];
+                _.remove(newQualities, (value, index, collection) => {
+                    return value.id === ID;
+                });
+                setQualities(newQualities);
+            }
         });
-
-        fetch(url)
-            .then((value) => {
-                value.json()
-                    .then((value) => {
-                        if (value.hasOwnProperty('error')) throw new Error(value.error);
-                        if (!value.hasOwnProperty('response')) throw new Error('Ошибка. Ответ от сервера не верный. Ответ не содержит значения response.');
-
-                        if (Number(value.response) === 1) {
-                            let newQualities = [...qualities];
-                            _.remove(newQualities, (value, index, collection) => {
-                                return value.id === ID;
-                            });
-                            setQualities(newQualities);
-                        }
-                    })
-                    .catch((reason) => {
-                        console.log('error', reason);
-                    })
-            })
-            .catch((reason) => {
-                console.log('error', reason);
-            })
-        ;
     }
 
     function showCreateFormHandler(event) {
@@ -137,12 +108,12 @@ export default function Quality(props: QualityProps) {
                     </tbody>
                 </table>
                 {createFormVisible ? (<CreateQualityForm
-                    host={props.host}
+                    api={props.api}
                     createHandler={createHandler}
                     closeHandler={hideCreateFormHandler}
                 />) : (<button onClick={showCreateFormHandler}>Create</button>)}
                 {editFormVisible && <EditQualityForm
-                    host={props.host}
+                    api={props.api}
                     ID={editQualityID}
                     updateHandler={updateHandler}
                     closeHandler={hideEditFormHandler}

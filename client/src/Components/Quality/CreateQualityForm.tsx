@@ -1,9 +1,9 @@
 import {useEffect, useState} from 'react';
 import _ from 'lodash';
+import Api from '../../Api.js';
 
 interface CreateQualityFormProps {
-    host: string;
-    // createHandler?: (ID: number) => void;
+    api: Api;
     createHandler?: (event) => void;
     closeHandler?: (event) => void;
 }
@@ -29,35 +29,14 @@ export default function CreateQualityForm(props: CreateQualityFormProps) {
 
     function submitHandle(event) {
         event.preventDefault();
-        let url = props.host + '/quality/create?' + new URLSearchParams({
+        props.api.request('/quality/create?' + new URLSearchParams({
             name: name,
             alias: alias,
             sort: String(sort),
+        }), (response) => {
+            props.createHandler?.(event);
+            resetFields();
         });
-        resetFields();
-
-        fetch(url)
-            .then((value) => {
-                value.json()
-                    .then((value) => {
-                        if (value.hasOwnProperty('error')) throw new Error(value.error);
-                        if (!value.hasOwnProperty('response')) throw new Error('Ошибка. Ответ от сервера не верный. Ответ не содержит значения response.');
-
-                        /*
-                            Все события пока будут через dom с event в аргументе.
-                            Ответ от сервера за пределами компонента пока будет считаться лишним.
-                         */
-                        // props.createHandler?.(Number(value.response));
-                        props.createHandler?.(event);
-                    })
-                    .catch((reason) => {
-                        console.log('error', reason);
-                    })
-            })
-            .catch((reason) => {
-                console.log('error', reason);
-            })
-        ;
     }
 
     function closeHandler(event) {

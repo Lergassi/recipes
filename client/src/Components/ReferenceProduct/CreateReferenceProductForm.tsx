@@ -1,8 +1,9 @@
 import {useEffect, useState} from 'react';
 import _ from 'lodash';
+import Api from '../../Api.js';
 
 interface CreateReferenceProductFormProps {
-    host: string;
+    api: Api;
     createHandler?: (ID: number) => void;
     closeHandler?: any;
 }
@@ -28,30 +29,13 @@ export default function CreateReferenceProductForm(props: CreateReferenceProduct
 
     function submitHandle(event) {
         event.preventDefault();
-        let url = props.host + '/reference_product/create?' + new URLSearchParams({
+        props.api.request('/reference_product/create?' + new URLSearchParams({
             name: name,
             alias: alias,
             sort: String(sort),
+        }), response => {
+            props.createHandler?.(Number(response));
         });
-        resetFields();
-
-        fetch(url)
-            .then((value) => {
-                value.json()
-                    .then((value) => {
-                        if (value.hasOwnProperty('error')) throw new Error(value.error);
-                        if (!value.hasOwnProperty('response')) throw new Error('Ошибка. Ответ от сервера не верный. Ответ не содержит значения response.');
-
-                        props.createHandler?.(Number(value.response));
-                    })
-                    .catch((reason) => {
-                        console.log('error', reason);
-                    })
-            })
-            .catch((reason) => {
-                console.log('error', reason);
-            })
-        ;
     }
 
     function resetFields(): void {

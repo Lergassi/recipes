@@ -135,6 +135,29 @@ class RecipeController
         return $this->responseBuilder->build($response);
     }
 
+    public function all(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $requestData = $request->getQueryParams();
+
+        if (!$this->validator->validateRequiredKeys($requestData, [
+            'dish_version_id',
+        ])) {
+            return $this->responseBuilder
+                ->addError('Не указаны обязательные параметры.')
+                ->build($response);
+        }
+
+        $data = [
+            'dish_version_id' => intval($requestData['dish_version_id']),
+        ];
+
+        $recipes = $this->dataManager->findRecipes($data['dish_version_id']);
+
+        $this->responseBuilder->set($recipes);
+
+        return $this->responseBuilder->build($response);
+    }
+
     public function get(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
@@ -158,12 +181,16 @@ class RecipeController
                 ->build($response);
         }
 
+        //todo: Запросы на получение данных для api можно сделать отдельно.
         $recipePositions = $this->dataManager->findRecipePositions($recipe['id']);
         $recipe['products'] = [];
         foreach ($recipePositions as $recipePosition) {
             $recipe['products'][] = [
+                'reference_product' => [
+                    'id' => $recipePosition['reference_product_id'],
+                    'name' => $recipePosition['reference_product_name'],
+                ],
                 'weight' => $recipePosition['weight'],
-                'reference_product_id' => $recipePosition['reference_product_id'],
             ];
         }
         $recipe['head_commit_id'] = $this->dataManager->findHeadRecipeCommit($recipe['id'])['id'] ?? null;
@@ -268,6 +295,11 @@ class RecipeController
                 ->build($response);
         }
 
+//        dump($head);
+//        dump($this->dataManager->findCommitRecipePositions($head['id']));
+//        dump($this->dataManager->findRecipePositions($recipe['id']));
+//        dump($this->dataManager->findDiffWithCurrentRecipe($recipe['id']));
+//        dd($this->dataManager->hasDiffWithCurrentRecipe($recipe['id']));
         if ($this->dataManager->hasDiffWithCurrentRecipe($recipe['id'])) {
             return $this->responseBuilder
                 ->addError('Нельзя создать рецепт. Текущий рецепт имеет незафиксированные изменения.')

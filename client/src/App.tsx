@@ -1,21 +1,27 @@
 import Quality from './Components/Quality/Quality.js';
-import {useState} from 'react';
-import TestEffect from './Components/Test/TestEffect.js';
-import Example from './Components/Test/Example.js';
 import ReferenceProduct from './Components/ReferenceProduct/ReferenceProduct.js';
+import Main from './Main.js';
+import Api from './Api.js';
 
 const params = {
     host: 'http://api.recipes.sd44.ru',
 };
 
+let api = new Api(
+    params.host,
+);
+
 export default function App() {
     return (
         <div>
+            <Main
+                api={api}
+            />
             <Quality
-                host={params.host}
+                api={api}
             />
             <ReferenceProduct
-                host={params.host}
+                api={api}
             />
         </div>
     );

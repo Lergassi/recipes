@@ -41,7 +41,7 @@ class DataManager
 
     public function findOneRecipe(int $ID): array|null
     {
-        $query = 'select * from recipes where id = :id';
+        $query = 'select r.* from recipes r where id = :id';
         $stmt = $this->pdo->prepare($query);
 
         $stmt->bindValue(':id', $ID);
@@ -94,7 +94,7 @@ class DataManager
      */
     public function findRecipePositions(int $recipeID)
     {
-        $query = 'select rp.*, r.id as recipe_id from recipe_positions rp left join recipes r on rp.recipe_id = r.id left join reference_products rfp on rp.reference_product_id = rfp.id where rp.recipe_id = :recipe_id order by rfp.sort';
+        $query = 'select rp.*, r.id as recipe_id, rfp.name as reference_product_name from recipe_positions rp left join recipes r on rp.recipe_id = r.id left join reference_products rfp on rp.reference_product_id = rfp.id where rp.recipe_id = :recipe_id order by rfp.sort';
         $stmt = $this->pdo->prepare($query);
 
         $stmt->bindValue(':recipe_id', $recipeID);
@@ -243,9 +243,16 @@ class DataManager
     {
         $query = 'select id, name, alias, sort from reference_products order by name';
         $stmt = $this->pdo->prepare($query);
+
         $stmt->execute();
 
-        return $stmt->fetchAll();
+        $fetch = $stmt->fetchAll();
+//        $items = [];
+//        foreach ($fetch as $item) {
+//            $items[$item['id']] = $item;
+//        }
+
+        return $fetch;
     }
 
     public function findCommitRecipePositions(int $recipeCommitID): array
@@ -266,7 +273,7 @@ class DataManager
             'select
                 rp.reference_product_id
                 ,rfp.name
-                ,rcp.weight     # было  если null удалено
+                ,rcp.weight     # было, если null то продукт новый
                 ,rp.weight      # стало
             from recipe_positions rp
                 left join reference_products rfp on rp.reference_product_id = rfp.id
@@ -276,14 +283,18 @@ class DataManager
                 left join recipe_commit_positions rcp on rc.id = rcp.recipe_commit_id and rp.reference_product_id = rcp.reference_product_id
             where
                 r.id = :recipe_id
-                and rp.weight <> rcp.weight
-                or rcp.weight is null
+                and
+                (
+                    rp.weight <> rcp.weight
+                    or rcp.weight is null
+                )
             union
             select
                 rcp.reference_product_id
                 ,rfp.name
                 ,rcp.weight     # было
-                ,rp.weight      # стало если null удалено
+                ,rp.weight      # стало, если null то продукт удален
+            
             from recipe_commit_positions rcp
                 left join reference_products rfp on rcp.reference_product_id = rfp.id
                 left join heads h on rcp.recipe_commit_id = h.recipe_commit_id
@@ -313,7 +324,7 @@ class DataManager
                 select
                     rp.reference_product_id
                     ,rfp.name
-                    ,rcp.weight     # было  если null удалено
+                    ,rcp.weight     # было, если null то продукт новый
                     ,rp.weight as rp_weight      # стало
                 from recipe_positions rp
                     left join reference_products rfp on rp.reference_product_id = rfp.id
@@ -323,14 +334,17 @@ class DataManager
                     left join recipe_commit_positions rcp on rc.id = rcp.recipe_commit_id and rp.reference_product_id = rcp.reference_product_id
                 where
                     r.id = :recipe_id
-                    and rp.weight <> rcp.weight
-                    or rcp.weight is null
+                    and
+                    (
+                        rp.weight <> rcp.weight
+                        or rcp.weight is null
+                    )
                 union
                 select
                     rcp.reference_product_id
                     ,rfp.name
                     ,rcp.weight     # было
-                    ,rp.weight      # стало если null удалено
+                    ,rp.weight      # стало, если null то продукт удален
                 from recipe_commit_positions rcp
                     left join reference_products rfp on rcp.reference_product_id = rfp.id
                     left join heads h on rcp.recipe_commit_id = h.recipe_commit_id

@@ -161,12 +161,18 @@ where
 ;
 
 # Поиск разницы в рецептах. Новые позиции, измененные позиции, удаленные позиции.
-# 0.0.1
+# 0.0.2
 select
     rp.reference_product_id
     ,rfp.name
-    ,rcp.weight     # было  если null удалено
+    ,rcp.weight     # было, если null то продукт новый
     ,rp.weight      # стало
+
+# debug
+#     ,h.*
+#     ,r.*
+#     ,rp.*
+#     ,rc.*
 from recipe_positions rp
     left join reference_products rfp on rp.reference_product_id = rfp.id
     left join recipes r on rp.recipe_id = r.id
@@ -174,15 +180,19 @@ from recipe_positions rp
     left join recipe_commits rc on h.recipe_commit_id = rc.id
     left join recipe_commit_positions rcp on rc.id = rcp.recipe_commit_id and rp.reference_product_id = rcp.reference_product_id
 where
-    r.id = 9
-    and rp.weight <> rcp.weight
-    or rcp.weight is null
+    r.id = 31
+    and
+    (
+        rp.weight <> rcp.weight
+        or rcp.weight is null
+    )
 union
 select
     rcp.reference_product_id
     ,rfp.name
     ,rcp.weight     # было
-    ,rp.weight      # стало если null удалено
+    ,rp.weight      # стало, если null то продукт удален
+
 from recipe_commit_positions rcp
     left join reference_products rfp on rcp.reference_product_id = rfp.id
     left join heads h on rcp.recipe_commit_id = h.recipe_commit_id
@@ -190,7 +200,7 @@ from recipe_commit_positions rcp
     left join recipes r on rc.recipe_id = r.id
     left join recipe_positions rp on r.id = rp.recipe_id and rcp.reference_product_id = rp.reference_product_id
 where
-    r.id = 9
+    r.id = 31
     and rp.weight is null
 ;
 

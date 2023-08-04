@@ -1,8 +1,9 @@
 import {useEffect, useState} from 'react';
 import _ from 'lodash';
+import Api from '../../Api.js';
 
 interface EditQualityFormProps {
-    host: string;
+    api: Api;
     ID: number;
     closeHandler?: (event) => void;
     updateHandler?: (event) => void;
@@ -15,59 +16,28 @@ export default function EditReferenceProductForm(props: EditQualityFormProps) {
     const [sort, setSort] = useState(0);
 
     useEffect(() => {
-        let url = props.host + '/reference_product/get?' + new URLSearchParams({
+        props.api.request('/reference_product/get?' + new URLSearchParams({
             id: String(props.ID),
+        }), response => {
+            //todo: Проверка наличия данных.
+
+            setID(response.id);
+            setName(response.name);
+            setAlias(response.alias);
+            setSort(response.sort);
         });
-        fetch(url)
-            .then((value) => {
-                value.json()
-                    .then((value) => {
-                        if (value.hasOwnProperty('error')) throw new Error(value.error);
-                        if (!value.hasOwnProperty('response')) throw new Error('Ошибка. Ответ от сервера не верный. Ответ не содержит значения response.');
-
-                        //todo: Проверка наличия данных.
-
-                        setID(value.response.id);
-                        setName(value.response.name);
-                        setAlias(value.response.alias);
-                        setSort(value.response.sort);
-                    })
-                    .catch((reason) => {
-                        console.log('error', reason);
-                    })
-            })
-            .catch((reason) => {
-                console.log('error', reason);
-            })
-        ;
     }, [props.ID]);
 
     function submitHandle(event) {
         event.preventDefault();
-        let url = props.host + '/reference_product/update?' + new URLSearchParams({
+        props.api.request('/reference_product/update?' + new URLSearchParams({
             id: String(props.ID),
             name: name,
             alias: alias,
             sort: String(sort),
+        }), response => {
+            props.updateHandler?.(event);  //todo: Можно сделать один метод close на все действия.
         });
-
-        fetch(url)
-            .then((value) => {
-                value.json()
-                    .then((value) => {
-                        if (value.hasOwnProperty('error')) throw new Error(value.error);
-                        if (!value.hasOwnProperty('response')) throw new Error('Ошибка. Ответ от сервера не верный. Ответ не содержит значения response.');
-
-                        props.updateHandler?.(event);  //todo: Можно сделать один метод close на все действия.
-                    })
-                    .catch((reason) => {
-                        console.log('error', reason);
-                    })
-            })
-            .catch((reason) => {
-                console.log('error', reason);
-            })
-        ;
     }
 
     function onChangeNameHandle(event) {

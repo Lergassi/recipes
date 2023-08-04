@@ -72,6 +72,7 @@ $app->get('/dish_version/update', \App\Controllers\DishVersionController::class 
 $app->get('/dish_version/delete', \App\Controllers\DishVersionController::class . ':delete');
 
 $app->get('/recipe/create', \App\Controllers\RecipeController::class . ':create');
+$app->get('/recipes', \App\Controllers\RecipeController::class . ':all');
 $app->get('/recipe/get', \App\Controllers\RecipeController::class . ':get');
 $app->get('/recipe/add_product', \App\Controllers\RecipeController::class . ':addProduct');
 $app->get('/recipe/remove_product', \App\Controllers\RecipeController::class . ':removeProduct');

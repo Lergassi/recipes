@@ -2,13 +2,15 @@ import {useEffect, useState} from 'react';
 import _ from 'lodash';
 import CreateReferenceProductForm from './CreateReferenceProductForm.js';
 import EditReferenceProductForm from './EditReferenceProductForm.js';
+import {ReferenceProductInterface} from '../../Interface/ReferenceProductInterface.js';
+import Api from '../../Api.js';
 
 interface ReferenceProductProps {
-    host: string;
+    api: Api;
 }
 
 export default function ReferenceProduct(props: ReferenceProductProps) {
-    const [referenceProducts, setReferenceProducts] = useState([]);
+    const [referenceProducts, setReferenceProducts] = useState<ReferenceProductInterface[]>();
 
     const [createFormVisible, setCreateFormVisible] = useState(false);
 
@@ -20,54 +22,17 @@ export default function ReferenceProduct(props: ReferenceProductProps) {
     }, []);
 
     function fetchItems() {
-        let url = props.host + '/reference_products';
-        fetch(url)
-            .then((value) => {
-                value.json()
-                    .then((value) => {
-                        if (value.hasOwnProperty('error')) throw new Error(value.error);
-                        if (!value.hasOwnProperty('response')) throw new Error('Ошибка. Ответ от сервера не верный. Ответ не содержит значения response.');
-
-                        setReferenceProducts(value.response);
-                    })
-                    .catch((reason) => {
-                        console.log('error', reason);
-                    })
-            })
-            .catch((reason) => {
-                console.log('error', reason);
-            })
-        ;
+        props.api.request('/reference_products', response => {
+            setReferenceProducts(response);
+        });
     }
 
     function onClickDeleteHandle(ID, event) {
-        let url = props.host + '/reference_product/delete?' + new URLSearchParams({
+        props.api.request('/reference_product/delete?' + new URLSearchParams({
             id: ID,
+        }), response => {
+            fetchItems();
         });
-
-        fetch(url)
-            .then((value) => {
-                value.json()
-                    .then((value) => {
-                        if (value.hasOwnProperty('error')) throw new Error(value.error);
-                        if (!value.hasOwnProperty('response')) throw new Error('Ошибка. Ответ от сервера не верный. Ответ не содержит значения response.');
-
-                        if (Number(value.response) === 1) {
-                            let newQualities = [...referenceProducts];
-                            _.remove(newQualities, (value, index, collection) => {
-                                return value.id === ID;
-                            });
-                            setReferenceProducts(newQualities);
-                        }
-                    })
-                    .catch((reason) => {
-                        console.log('error', reason);
-                    })
-            })
-            .catch((reason) => {
-                console.log('error', reason);
-            })
-        ;
     }
 
     function showCreateFormHandler(event) {
@@ -118,7 +83,7 @@ export default function ReferenceProduct(props: ReferenceProductProps) {
                         <th>sort</th>
                         <th>control</th>
                     </tr>
-                    {referenceProducts.map((value, index, array) => {
+                    {_.map(referenceProducts, (value, index, array) => {
                         return (
                             <tr key={index}>
                                 <td>{value.id}</td>
@@ -135,12 +100,12 @@ export default function ReferenceProduct(props: ReferenceProductProps) {
                     </tbody>
                 </table>
                 {createFormVisible ? (<CreateReferenceProductForm
-                    host={props.host}
+                    api={props.api}
                     createHandler={createHandler}
                     closeHandler={hideCreateFormHandler}
                 />) : (<button onClick={showCreateFormHandler}>Create</button>)}
                 {editFormVisible && <EditReferenceProductForm
-                    host={props.host}
+                    api={props.api}
                     ID={editReferenceProductID}
                     updateHandler={updateHandler}
                     closeHandler={closeEditFormHandler}
