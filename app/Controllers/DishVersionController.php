@@ -54,9 +54,9 @@ class DishVersionController
 
         $data = [
             'name' => $requestData['name'],
-            'alias' => $requestData['alias'] ?? $this->aliasGenerator->generate($requestData['name'], 1),   //todo: index получить на основе бд.
+            'alias' => isset($requestData['alias']) && !empty($requestData['alias']) ? $requestData['alias'] : $this->aliasGenerator->generate($requestData['name'], 1),   //todo: index получить на основе бд.
             'dish_id' => intval($requestData['dish_id']),
-            'quality_id' => isset($requestData['quality_id']) ? intval($requestData['quality_id']) : $this->dataManager->findOneQualityByAlias('common')['id'], //todo: Сделать значения по умолчанию и/или удобное использование alias в коде.
+            'quality_id' => isset($requestData['quality_id']) && !empty($requestData['quality_id']) ? intval($requestData['quality_id']) : $this->dataManager->findOneQualityByAlias('common')['id'], //todo: Сделать значения по умолчанию и/или удобное использование alias в коде.
         ];
 
         //todo: validate data
@@ -151,7 +151,7 @@ class DishVersionController
         if (!$this->validator->validateRequiredKeys($requestData, [
             'id',
             'name',
-            'dish_id',
+            'alias',
             'quality_id',
         ])) {
             return $this->responseBuilder
@@ -162,21 +162,19 @@ class DishVersionController
         $data = [
             'id' => intval($requestData['id']),
             'name' => $requestData['name'],
-            'alias' => $requestData['alias'] ?? $this->aliasGenerator->generate($requestData['name'], 1),
-            'dish_id' => intval($requestData['dish_id']),
+            'alias' => $requestData['alias'],
             'quality_id' => intval($requestData['quality_id']),
         ];
 
         //todo: validate data
 
-        $query = 'update dish_versions set name = :name, alias = :alias, dish_id = :dish_id, quality_id = :quality_id where id = :id';
+        $query = 'update dish_versions set name = :name, alias = :alias, quality_id = :quality_id where id = :id';
 
         $stmt = $this->pdo->prepare($query);
 
         $stmt->bindValue(':id', $data['id']);
         $stmt->bindValue(':name', $data['name']);
         $stmt->bindValue(':alias', $data['alias']);
-        $stmt->bindValue(':dish_id', $data['dish_id']);
         $stmt->bindValue(':quality_id', $data['quality_id']);
 
         $stmt->execute();

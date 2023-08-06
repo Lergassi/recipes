@@ -17,12 +17,12 @@ export default function App() {
             <Main
                 api={api}
             />
-            <Quality
-                api={api}
-            />
-            <ReferenceProduct
-                api={api}
-            />
+            {/*<Quality*/}
+            {/*    api={api}*/}
+            {/*/>*/}
+            {/*<ReferenceProduct*/}
+            {/*    api={api}*/}
+            {/*/>*/}
         </div>
     );
 }

@@ -236,27 +236,29 @@ class RecipeController
 
         $previousRecipeCommit = $this->dataManager->findPreviousRecipeCommit($recipe['id']);
 
-        $insertRecipeCommitQuery = 'insert into recipe_commits (recipe_id, previous_commit_id) VALUES (:recipe_id, :previous_commit_id)';
-        $insertRecipeCommitStmt = $this->pdo->prepare($insertRecipeCommitQuery);
+//        $insertRecipeCommitQuery = 'insert into recipe_commits (recipe_id, previous_commit_id) VALUES (:recipe_id, :previous_commit_id)';
+//        $insertRecipeCommitStmt = $this->pdo->prepare($insertRecipeCommitQuery);
+//
+//        $insertRecipeCommitStmt->bindValue(':recipe_id', $recipe['id']);
+//        $insertRecipeCommitStmt->bindValue(':previous_commit_id', $previousRecipeCommit['id'] ?? null);
+//
+//        $insertRecipeCommitStmt->execute();
+//        $recipeCommitID = $this->pdo->lastInsertId();
+//
+//        $insertRecipeCommitPositionQuery = 'insert into recipe_commit_positions (weight, reference_product_id, recipe_commit_id) VALUES (:weight, :reference_product_id, :recipe_commit_id)';
+//        $insertRecipeCommitPositionStmt = $this->pdo->prepare($insertRecipeCommitPositionQuery);
+//
+//        foreach ($recipePositions as $recipePosition) {
+//            $insertRecipeCommitPositionStmt->bindValue(':weight', $recipePosition['weight']);
+//            $insertRecipeCommitPositionStmt->bindValue(':reference_product_id', $recipePosition['reference_product_id']);
+//            $insertRecipeCommitPositionStmt->bindValue(':recipe_commit_id', $recipeCommitID);
+//
+//            $insertRecipeCommitPositionStmt->execute();
+//        }
+//
+//        $this->recipeService->updateHead($recipe['id'], $recipeCommitID);
 
-        $insertRecipeCommitStmt->bindValue(':recipe_id', $recipe['id']);
-        $insertRecipeCommitStmt->bindValue(':previous_commit_id', $previousRecipeCommit['id'] ?? null);
-
-        $insertRecipeCommitStmt->execute();
-        $recipeCommitID = $this->pdo->lastInsertId();
-
-        $insertCommitRecipePositionQuery = 'insert into recipe_commit_positions (weight, reference_product_id, recipe_commit_id) VALUES (:weight, :reference_product_id, :recipe_commit_id)';
-        $insertRecipePositionStmt = $this->pdo->prepare($insertCommitRecipePositionQuery);
-
-        foreach ($recipePositions as $recipePosition) {
-            $insertRecipePositionStmt->bindValue(':weight', $recipePosition['weight']);
-            $insertRecipePositionStmt->bindValue(':reference_product_id', $recipePosition['reference_product_id']);
-            $insertRecipePositionStmt->bindValue(':recipe_commit_id', $recipeCommitID);
-
-            $insertRecipePositionStmt->execute();
-        }
-
-        $this->recipeService->updateHead($recipe['id'], $recipeCommitID);
+        $recipeCommitID = $this->recipeService->commit($recipe['id'], $previousRecipeCommit['id'] ?? null);
 
         $this->pdo->commit();
 
@@ -315,7 +317,12 @@ class RecipeController
             $this->recipeService->addProduct($newRecipeID, $recipePosition['reference_product_id'], $recipePosition['weight']);
         }
 
-        $this->recipeService->updateHead($newRecipeID, $head['id']);
+        $this->recipeService->commit($newRecipeID);
+
+//        $this->recipeService->updateHead($newRecipeID, $head['id']);
+
+//        $newRecipeCommitID = $this->recipeService->copyRecipeCommit($head['id']);
+//        $this->recipeService->updateHead($newRecipeID, $newRecipeCommitID);
 
         $this->pdo->commit();
 

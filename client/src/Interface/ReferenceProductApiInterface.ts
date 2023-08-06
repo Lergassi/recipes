@@ -1,4 +1,4 @@
-export interface ReferenceProductInterface {
+export interface ReferenceProductApiInterface {
     id: number;
     name: string;
     alias: string;

@@ -46,8 +46,8 @@ class DishController
 
         $data = [
             'name' => $requestData['name'],
-            'alias' => $requestData['alias'] ?? $this->aliasGenerator->generate($requestData['name'], 1),
-            'quality_id' => isset($requestData['quality_id']) ? intval($requestData['quality_id']) : $this->dataManager->findOneQualityByAlias('common')['id'], //todo: Сделать значения по умолчанию и/или удобное использование alias в коде.
+            'alias' => isset($requestData['alias']) && !empty($requestData['alias']) ? $requestData['alias'] : $this->aliasGenerator->generate($requestData['name'], 1),
+            'quality_id' => isset($requestData['quality_id']) && !empty($requestData['quality_id']) ? intval($requestData['quality_id']) : $this->dataManager->findOneQualityByAlias('common')['id'], //todo: Сделать значения по умолчанию и/или удобное использование alias в коде.
         ];
 
         //todo: validate data
@@ -164,6 +164,16 @@ class DishController
 
         //todo: validate data
         //todo: validate foreign keys
+        /*
+         * dishes
+         * dish_versions
+         * recipes
+         * recipe_positions
+         *
+         * recipe_commits
+         * recipe_commit_positions
+         * heads
+         * */
 
         $query = 'delete from dishes where id = :id';
 

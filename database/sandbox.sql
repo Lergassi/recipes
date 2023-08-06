@@ -162,12 +162,12 @@ where
 
 # Поиск разницы в рецептах. Новые позиции, измененные позиции, удаленные позиции.
 # 0.0.2
+@recipe_id=50;
 select
     rp.reference_product_id
     ,rfp.name
     ,rcp.weight     # было, если null то продукт новый
     ,rp.weight      # стало
-
 # debug
 #     ,h.*
 #     ,r.*
@@ -180,7 +180,8 @@ from recipe_positions rp
     left join recipe_commits rc on h.recipe_commit_id = rc.id
     left join recipe_commit_positions rcp on rc.id = rcp.recipe_commit_id and rp.reference_product_id = rcp.reference_product_id
 where
-    r.id = 31
+#     r.id = 49
+    r.id = 54
     and
     (
         rp.weight <> rcp.weight
@@ -192,7 +193,13 @@ select
     ,rfp.name
     ,rcp.weight     # было
     ,rp.weight      # стало, если null то продукт удален
+# debug
 
+#     rcp.*
+#     ,h.*
+#     ,r.*
+#     ,rp.*
+#     ,rc.*
 from recipe_commit_positions rcp
     left join reference_products rfp on rcp.reference_product_id = rfp.id
     left join heads h on rcp.recipe_commit_id = h.recipe_commit_id
@@ -200,7 +207,11 @@ from recipe_commit_positions rcp
     left join recipes r on rc.recipe_id = r.id
     left join recipe_positions rp on r.id = rp.recipe_id and rcp.reference_product_id = rp.reference_product_id
 where
-    r.id = 31
+    r.id = 54
+#     h.recipe_id = 50
+#     r.id = 50
+#     r.id = 51
+#     rc.recipe_id = 50
     and rp.weight is null
 ;
 
@@ -238,4 +249,30 @@ from (
         r.id = 9
         and rp.weight is null
      ) as sum_table
+;
+
+# dev delete
+# ----
+# dishes
+# dish_versions
+# recipes
+# recipe_positions
+#
+# recipe_commits
+# recipe_commit_positions
+# heads
+
+# start transaction;
+delete r from recipes r left join dish_versions dv on r.dish_version_id = dv.id left join dishes d on dv.dish_id = d.id where d.id = 3;
+delete dv from dish_versions dv left join dishes d on dv.dish_id = d.id where d.id = 3;
+delete from dishes d where d.id = 3;
+# и тд... итого сейчас 7 запросов, запуская снизу.
+
+rollback;
+
+select
+    *
+from dishes
+    left join
+where id = 12
 ;

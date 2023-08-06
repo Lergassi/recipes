@@ -3,7 +3,7 @@ import DishVersionList from './Components/DishVersion/DishVersionList.js';
 import RecipeList from './Components/Recipe/RecipeList.js';
 import Recipe from './Components/Recipe/Recipe.js';
 import {useEffect, useState} from 'react';
-import {ReferenceProductInterface} from './Interface/ReferenceProductInterface.js';
+import {ReferenceProductApiInterface} from './Interface/ReferenceProductApiInterface.js';
 import Api from './Api.js';
 
 interface MainProps {
@@ -11,32 +11,24 @@ interface MainProps {
 }
 
 export default function Main(props: MainProps) {
-    const [referenceProducts, setReferenceProducts] = useState<ReferenceProductInterface[]>([]);
-
-    const [selectDishID, setSelectDishID] = useState<number|null>(null);
-    const [selectDishVersionID, setSelectDishVersionID] = useState<number|null>(null);
-    const [selectRecipeID, setSelectRecipeID] = useState<number|null>(null);
+    const [selectedDishID, setSelectedDishID] = useState<number|null>(null);
+    const [selectedDishVersionID, setSelectedDishVersionID] = useState<number|null>(null);
+    const [selectedRecipeID, setSelectedRecipeID] = useState<number|null>(null);
 
     useEffect(() => {
-        fetchReferenceProducts();
+
     }, []);
 
     function selectDishHandler(ID: number, event): void {
-        setSelectDishID(ID);
+        setSelectedDishID(ID);
     }
 
     function selectDishVersionHandler(ID: number, event): void {
-        setSelectDishVersionID(ID);
+        setSelectedDishVersionID(ID);
     }
 
     function selectRecipeHandler(ID: number, event): void {
-        setSelectRecipeID(ID);
-    }
-
-    function fetchReferenceProducts(): void {
-        props.api.request('/reference_products?', response => {
-            setReferenceProducts(response);
-        });
+        setSelectedRecipeID(ID);
     }
 
     return (
@@ -50,22 +42,21 @@ export default function Main(props: MainProps) {
             <div className={'main__dish-version-list'}>
                 <DishVersionList
                     api={props.api}
-                    dishID={selectDishID}
+                    dishID={selectedDishID}
                     selectHandler={selectDishVersionHandler}
                 />
             </div>
             <div className={'main__recipe-list'}>
                 <RecipeList
                     api={props.api}
-                    dishVersionID={selectDishVersionID}
+                    dishVersionID={selectedDishVersionID}
                     selectHandler={selectRecipeHandler}
                 />
             </div>
             <div className={'main__recipe'}>
                 <Recipe
                     api={props.api}
-                    ID={selectRecipeID}
-                    referenceProducts={referenceProducts}
+                    ID={selectedRecipeID}
                 />
             </div>
         </div>

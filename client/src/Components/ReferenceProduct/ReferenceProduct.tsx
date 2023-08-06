@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react';
 import _ from 'lodash';
 import CreateReferenceProductForm from './CreateReferenceProductForm.js';
 import EditReferenceProductForm from './EditReferenceProductForm.js';
-import {ReferenceProductInterface} from '../../Interface/ReferenceProductInterface.js';
+import {ReferenceProductApiInterface} from '../../Interface/ReferenceProductApiInterface.js';
 import Api from '../../Api.js';
 
 interface ReferenceProductProps {
@@ -10,7 +10,7 @@ interface ReferenceProductProps {
 }
 
 export default function ReferenceProduct(props: ReferenceProductProps) {
-    const [referenceProducts, setReferenceProducts] = useState<ReferenceProductInterface[]>();
+    const [referenceProducts, setReferenceProducts] = useState<ReferenceProductApiInterface[]>();
 
     const [createFormVisible, setCreateFormVisible] = useState(false);
 

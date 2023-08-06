@@ -100,7 +100,56 @@ class RecipeService
 //        return $newRecipeID;
 //    }
 
-    public function updateHead(int $recipeID, int $recipeCommitID): int
+//    public function copy(int $recipeID, string $name): int
+//    {
+//        $recipe = $this->dataManager->findOneRecipe($recipeID);
+//        $newRecipeID = $this->recipeFactory->create($name, $recipe['dish_version_id']);
+//
+//        $recipePositions = $this->dataManager->findRecipePositions($recipe['id']);
+//        foreach ($recipePositions as $recipePosition) {
+//            $this->addProduct($newRecipeID, $recipePosition['reference_product_id'], $recipePosition['weight']);
+//        }
+//
+//        $this->commit($newRecipeID);
+//    }
+
+    public function createRecipeCommitPosition(): int
+    {
+        $insertRecipeCommitPositionQuery = 'insert into recipe_commit_positions (weight, reference_product_id, recipe_commit_id) VALUES (:weight, :reference_product_id, :recipe_commit_id)';
+        $insertRecipeCommitPositionStmt = $this->pdo->prepare($insertRecipeCommitPositionQuery);
+
+        return 0;
+    }
+
+    public function commit(int $recipeID, int $previousRecipeCommitID = null)
+    {
+        $insertRecipeCommitQuery = 'insert into recipe_commits (recipe_id, previous_commit_id) VALUES (:recipe_id, :previous_commit_id)';
+        $insertRecipeCommitStmt = $this->pdo->prepare($insertRecipeCommitQuery);
+
+        $insertRecipeCommitStmt->bindValue(':recipe_id', $recipeID);
+        $insertRecipeCommitStmt->bindValue(':previous_commit_id', $previousRecipeCommitID);
+
+        $insertRecipeCommitStmt->execute();
+        $recipeCommitID = $this->pdo->lastInsertId();
+
+        $insertRecipeCommitPositionQuery = 'insert into recipe_commit_positions (weight, reference_product_id, recipe_commit_id) VALUES (:weight, :reference_product_id, :recipe_commit_id)';
+        $insertRecipeCommitPositionStmt = $this->pdo->prepare($insertRecipeCommitPositionQuery);
+
+        $recipePositions = $this->dataManager->findRecipePositions($recipeID);
+        foreach ($recipePositions as $recipePosition) {
+            $insertRecipeCommitPositionStmt->bindValue(':weight', $recipePosition['weight']);
+            $insertRecipeCommitPositionStmt->bindValue(':reference_product_id', $recipePosition['reference_product_id']);
+            $insertRecipeCommitPositionStmt->bindValue(':recipe_commit_id', $recipeCommitID);
+
+            $insertRecipeCommitPositionStmt->execute();
+        }
+
+        $this->updateHead($recipeID, $recipeCommitID);
+
+        return $recipeCommitID;
+    }
+
+    private function updateHead(int $recipeID, int $recipeCommitID): void
     {
         $head = $this->dataManager->findHeadRecipeCommit($recipeID);
         if (!$head) {
@@ -120,7 +169,5 @@ class RecipeService
 
             $updateHeadStmt->execute();
         }
-
-        return $recipeCommitID;
     }
 }
