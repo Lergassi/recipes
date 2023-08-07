@@ -51,26 +51,28 @@ export default function CreateDishForm(props: CreateDishFormProps) {
     }
 
     return (
-        <div>
-            <h3>Create dish</h3>
+        <div className={'modal-form'}>
             <form action="">
-                <div>
+                <div className={'input-group'}>
                     <span>name: </span>
-                    <input type="text" value={name} onChange={onChangeNameHandle}/>
+                    <input className={'app-input'} type="text" value={name} onChange={onChangeNameHandle}/>
                 </div>
-                <div>
+                <div className={'input-group'}>
                     <span>alias: </span>
-                    <input type="text" value={alias} onChange={onChangeAliasHandle}/>
+                    <input className={'app-input'} type="text" value={alias} onChange={onChangeAliasHandle}/>
                 </div>
-                <div>
+                <div className={'input-group'}>
+                    <span>quality: </span>
                     <QualitySelector
                         api={props.api}
                         selectHandler={onChangeQualityIDHandle}
                         selectedQualityID={qualityID}
                     />
                 </div>
-                <input type="submit" value={'Create'} onClick={submitHandle}/>
-                <button onClick={closeHandler}>Close</button>
+                <div className={'input-group'}>
+                    <input className={'btn'} type="submit" value={'Create'} onClick={submitHandle}/>
+                    <button className={'btn'} onClick={closeHandler}>Close</button>
+                </div>
             </form>
         </div>
     );

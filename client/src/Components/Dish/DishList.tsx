@@ -2,7 +2,6 @@ import {useEffect, useState} from 'react';
 import Api from '../../Api.js';
 import CreateDishForm from './CreateDishForm.js';
 import EditDishForm from './EditDishForm.js';
-import EditQualityForm from '../Quality/EditQualityForm.js';
 
 interface DishListProps {
     api: Api;
@@ -11,6 +10,7 @@ interface DishListProps {
 
 export default function DishList(props: DishListProps) {
     const [dishes, setDishes] = useState([]);
+    const [selectedDishID, setSelectedDishID] = useState<number|null>(null);
 
     const [createFormVisible, setCreateFormVisible] = useState(false);
 
@@ -29,6 +29,7 @@ export default function DishList(props: DishListProps) {
 
     function selectHandler(ID: number, event): void {
         event.preventDefault();
+        setSelectedDishID(ID);
         props.selectHandler?.(ID, event);
     }
 
@@ -49,6 +50,7 @@ export default function DishList(props: DishListProps) {
 
     function showEditFormHandler(ID: number, event) {
         event.preventDefault();
+        event.stopPropagation();
         setEditDishID(ID);
         setEditFormVisible(true);
     }
@@ -64,49 +66,32 @@ export default function DishList(props: DishListProps) {
     }
 
     return (
-        <div>
+        <div className={'dish-list-component'}>
             <h3>Dishes</h3>
-            <div>
-                <table className={'base-table'}>
-                    <tbody>
-                    <tr>
-                        <th>id</th>
-                        <th>name</th>
-                        <th>alias</th>
-                        <th>quality</th>
-                        <th>control</th>
-                    </tr>
-                    {dishes.map((value, index, array) => {
-                        return (
-                            <tr key={index}>
-                                <td>{value.id}</td>
-                                <td>{value.name}</td>
-                                <td>{value.alias}</td>
-                                <td>{value.quality_id}</td>
-                                <td>
-                                    <button onClick={selectHandler.bind(this, value.id)}>Select</button>
-                                    <button onClick={showEditFormHandler.bind(this, value.id)}>Edit</button>
-                                </td>
-                            </tr>
-                        );
-                    })}
-                    </tbody>
-                </table>
-                <div>
-                    {createFormVisible ? <CreateDishForm
-                        api={props.api}
-                        createHandler={createHandler}
-                        closeHandler={hideCreateFormHandler}
-                    /> : <button onClick={showCreateFormHandler}>Create dish</button>}
-                </div>
-                <div>
-                    {editFormVisible && <EditDishForm
-                        api={props.api}
-                        ID={editDishID}
-                        updateHandler={updateHandler}
-                        closeHandler={hideEditFormHandler}
-                    />}
-                </div>
+            <div className={'item-list simple-block'}>
+                {dishes.map((value, index, array) => {
+                    return (
+                        <div className={'item-list__item ' + (selectedDishID === value.id ? 'item-list__item_selected' : '')} onClick={selectHandler.bind(this, value.id)} key={index}>
+                            <span className={'item-list__item-text'}>{value.name}</span>
+                            <span className={'item-list__edit-button'} onClick={showEditFormHandler.bind(this, value.id)}></span>
+                        </div>
+                    );
+                })}
+            </div>
+            <div className={'simple-block'}>
+                {createFormVisible ? <CreateDishForm
+                    api={props.api}
+                    createHandler={createHandler}
+                    closeHandler={hideCreateFormHandler}
+                /> : <button className={'btn'} onClick={showCreateFormHandler}>Add</button>}
+            </div>
+            <div className={'simple-block'}>
+                {editFormVisible && <EditDishForm
+                    api={props.api}
+                    ID={editDishID}
+                    updateHandler={updateHandler}
+                    closeHandler={hideEditFormHandler}
+                />}
             </div>
         </div>
     );

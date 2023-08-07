@@ -10,7 +10,7 @@ interface ReferenceProductProps {
 }
 
 export default function ReferenceProduct(props: ReferenceProductProps) {
-    const [referenceProducts, setReferenceProducts] = useState<ReferenceProductApiInterface[]>();
+    const [referenceProducts, setReferenceProducts] = useState<ReferenceProductApiInterface[]>([]);
 
     const [createFormVisible, setCreateFormVisible] = useState(false);
 
@@ -73,7 +73,7 @@ export default function ReferenceProduct(props: ReferenceProductProps) {
     return (
         <div>
             <h3>Reference products</h3>
-            <div>
+            <div className={'simple-block'}>
                 <table className={'base-table'}>
                     <tbody>
                     <tr>
@@ -91,19 +91,21 @@ export default function ReferenceProduct(props: ReferenceProductProps) {
                                 <td>{value.alias}</td>
                                 <td>{value.sort}</td>
                                 <td>
-                                    <button onClick={onClickDeleteHandle.bind(this, value.id)}>delete</button>
-                                    <button onClick={showEditFormHandler.bind(this, value.id)}>Edit</button>
+                                    <button className={'btn'} onClick={showEditFormHandler.bind(this, value.id)}>Edit</button>
+                                    <button className={'btn'} onClick={onClickDeleteHandle.bind(this, value.id)}>Delete</button>
                                 </td>
                             </tr>
                         );
                     })}
                     </tbody>
                 </table>
+            </div>
+            <div className={'simple-block'}>
                 {createFormVisible ? (<CreateReferenceProductForm
                     api={props.api}
                     createHandler={createHandler}
                     closeHandler={hideCreateFormHandler}
-                />) : (<button onClick={showCreateFormHandler}>Create</button>)}
+                />) : (<button className={'btn'} onClick={showCreateFormHandler}>Create</button>)}
                 {editFormVisible && <EditReferenceProductForm
                     api={props.api}
                     ID={editReferenceProductID}

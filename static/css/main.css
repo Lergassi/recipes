@@ -1,11 +1,25 @@
 * {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 14px;    /* todo: Отдельные размеры для заголовков. */
+    font-family: 'Exo 2', sans-serif;
 }
 
+*:not(h1, h2, h3, h4, h5, h6) {
+    font-size: 14px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0 0 10px 0;
+}
+
+/*--------------------------------*/
+/* base table                     */
+/*--------------------------------*/
 .base-table {
     border-collapse: collapse;
     border: 1px solid #a1a1a1;
+}
+
+.base-table_fullwidth {
+    width: 100%;
 }
 
 .base-table th {
@@ -18,7 +32,129 @@
     padding: 4px 8px;
 }
 
-/* dev */
-/*.dev_block {*/
-/*    padding-bottom: 15px;*/
+/*--------------------------------*/
+/* layout                         */
+/*--------------------------------*/
+.component-group:after {
+    content: '';
+    clear: both;
+    display: block;
+}
+
+.component-wrapper {
+    float: left;
+    margin-right: 15px;
+}
+
+/*--------------------------------*/
+/* block                          */
+/*--------------------------------*/
+.simple-block {
+    margin-bottom: 10px;
+}
+
+/*--------------------------------*/
+/* app-data                       */
+/*--------------------------------*/
+.app-data-list {
+    width: 200px;
+}
+
+/*--------------------------------*/
+/* item-list                      */
+/*--------------------------------*/
+.item-list {
+    border: 1px solid #a1a1a1;
+}
+
+.item-list__item:not(:last-child) {
+    border-bottom: 1px solid #a1a1a1;
+}
+
+.item-list__item {
+    /*padding: 6px 10px;*/
+    padding-right: 50px;
+    position: relative;
+}
+
+.item-list__item-text {
+    padding: 6px 10px;
+    display: inline-block;
+}
+
+.item-list__item_selected {
+    background-color: #e3dada;
+}
+
+.item-list__item:hover {
+    background-color: #f8eded;
+    cursor: pointer;
+}
+
+.item-list__edit-button {
+    width: 16px;
+    height: 16px;
+    background: url("/images/icons/writing_64.png") no-repeat;
+    background-size: 100%;
+    display: inline-block;
+    position: absolute;
+    right: 6px;
+    top: 6px;
+}
+
+.item-list__edit-button:hover {
+    background-color: #eadfdf;
+}
+
+/*--------------------------------*/
+/* buttons                        */
+/*--------------------------------*/
+.btn {
+    background: white;
+    border-radius: 4px;
+    border: 1px solid #a1a1a1;
+    padding: 4px 8px;
+}
+
+.btn:hover:not(:disabled) {
+    background: #f3f3f3;
+    cursor: pointer;
+}
+
+/*--------------------------------*/
+/* forms                          */
+/*--------------------------------*/
+.modal-form {
+    position: absolute;
+    border: 1px solid #a1a1a1;
+    padding: 10px;
+    background: white;
+    z-index: 42000;
+}
+
+/*--------------------------------*/
+/* form components                */
+/*--------------------------------*/
+.app-input {
+    border: 1px solid #a1a1a1;
+    padding: 4px 0;
+}
+
+.app-select {
+    padding: 3px 0;
+}
+
+.input-group:not(:last-child) {
+    margin-bottom: 4px;
+}
+
+/*--------------------------------*/
+/* dev                            */
+/*--------------------------------*/
+.dev_bg-orange {
+    background-color: orange;
+}
+
+/*.item-list__edit-button:after {*/
+/*    content: 'E';*/
 /*}*/

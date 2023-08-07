@@ -11,7 +11,7 @@ interface RecipeProps {
 
 export default function Recipe(props: RecipeProps) {
     const [recipe, setRecipe] = useState<RecipeApiInterface>(null);
-    const [newName, setNewName] = useState('');
+    const [branchName, setBranchName] = useState('');
 
     useEffect(() => {
         if (props.ID) {
@@ -58,31 +58,36 @@ export default function Recipe(props: RecipeProps) {
     function branchHandler(event): void {
         props.api.request('/recipe/branch?' + new URLSearchParams({
             id: String(recipe.id),
-            name: newName,
+            name: branchName,
         }), response => {
             console.log('Branch created!');
+            resetBranchControl();
         });
     }
 
     function branchNameOnChangeHandler(event): void {
-        setNewName(event.target.value);
+        setBranchName(event.target.value);
+    }
+
+    function resetBranchControl(): void {
+        setBranchName('');
     }
 
     return recipe && (
         <div>
-            <h3>Recipe {recipe.name} ({recipe.id})</h3>
+            <h3>Recipe</h3>
             <div>
                 <ReferenceProductWeightSelector
                     api={props.api}
-                    addProductHandler={addProductHandler}
-                    removeProductHandler={removeProductHandler}
+                    addReferenceProductHandler={addProductHandler}
+                    removeReferenceProductHandler={removeProductHandler}
                 />
             </div>
-            <div>
-                <table className={'base-table'}>
+            <div className={'simple-block'}>
+                <table className={'base-table base-table_fullwidth'}>
                     <tbody>
                     <tr>
-                        <th>reference product id</th>
+                        <th>product</th>
                         <th>weight</th>
                         <th>control</th>
                     </tr>
@@ -94,7 +99,7 @@ export default function Recipe(props: RecipeProps) {
                                 <td>{value.weight}</td>
                                 <td>
                                     {/*<button onClick={deleteFullProductWeightHandler.bind(this, value.reference_product.id, value.weight)}>Remove</button>*/}
-                                    <button onClick={removeProductHandler.bind(this, value.reference_product.id, value.weight)}>Remove</button>
+                                    <button className={'btn'} onClick={removeProductHandler.bind(this, value.reference_product.id, value.weight)}>Remove</button>
                                 </td>
                             </tr>
                         );
@@ -102,11 +107,13 @@ export default function Recipe(props: RecipeProps) {
                     </tbody>
                 </table>
             </div>
-            <div><button onClick={commitHandler}>Commit</button>, last commit: {recipe.head_commit_id ?? 'uncommitted'}</div>
-            <div>
-                <input value={newName} type="text" onChange={branchNameOnChangeHandler}/>
-                <button onClick={branchHandler}>Branch</button>
-                <button disabled={true} >DishVersion (indev)</button>
+            <div className={'simple-block'}>
+                <button className={'btn'} onClick={commitHandler}>Commit</button>, last commit: {recipe.head_commit_id ?? 'uncommitted'}
+            </div>
+            <div className={'simple-block'}>
+                <input className={'app-input'} value={branchName} type="text" onChange={branchNameOnChangeHandler} placeholder={'name'}/>
+                <button className={'btn'} onClick={branchHandler}>Branch</button>
+                <button className={'btn'} disabled={true} >DishVersion (indev)</button>
             </div>
         </div>
     );

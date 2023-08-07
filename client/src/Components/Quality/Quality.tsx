@@ -3,13 +3,14 @@ import _ from 'lodash';
 import CreateQualityForm from './CreateQualityForm.js';
 import EditQualityForm from './EditQualityForm.js';
 import Api from '../../Api.js';
+import {QualityApiInterface} from '../../Interface/QualityApiInterface.js';
 
 interface QualityProps {
     api: Api;
 }
 
 export default function Quality(props: QualityProps) {
-    const [qualities, setQualities] = useState([]);
+    const [qualities, setQualities] = useState<QualityApiInterface[]>([]);
 
     const [createFormVisible, setCreateFormVisible] = useState(false);
 
@@ -81,11 +82,11 @@ export default function Quality(props: QualityProps) {
     return (
         <div>
             <h3>Qualities</h3>
-            <div>
+            <div className={'simple-block'}>
                 <table className={'base-table'}>
                     <tbody>
                     <tr>
-                        <th>id</th>{/* todo: Только для dev. */}
+                        <th>id</th>
                         <th>name</th>
                         <th>alias</th>
                         <th>sort</th>
@@ -99,19 +100,21 @@ export default function Quality(props: QualityProps) {
                                 <td>{value.alias}</td>
                                 <td>{value.sort}</td>
                                 <td>
-                                    <button onClick={deleteHandle.bind(this, value.id)}>delete</button>
-                                    <button onClick={showEditFormHandler.bind(this, value.id)}>Edit</button>
+                                    <button className={'btn'} onClick={showEditFormHandler.bind(this, value.id)}>Edit</button>
+                                    <button className={'btn'} onClick={deleteHandle.bind(this, value.id)}>Delete</button>
                                 </td>
                             </tr>
                         );
                     })}
                     </tbody>
                 </table>
+            </div>
+            <div className={'simple-block'}>
                 {createFormVisible ? (<CreateQualityForm
                     api={props.api}
                     createHandler={createHandler}
                     closeHandler={hideCreateFormHandler}
-                />) : (<button onClick={showCreateFormHandler}>Create</button>)}
+                />) : (<button className={'btn'} onClick={showCreateFormHandler}>Create</button>)}
                 {editFormVisible && <EditQualityForm
                     api={props.api}
                     ID={editQualityID}
@@ -119,7 +122,6 @@ export default function Quality(props: QualityProps) {
                     closeHandler={hideEditFormHandler}
                 />}
             </div>
-            {/*end block__content*/}
         </div>
     );
 }

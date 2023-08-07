@@ -34,7 +34,7 @@ export default function QualitySelector(props: QualitySelectorProps) {
     }
 
     return (
-        <select name="" id="" onChange={onChangeQualityIDHandle} value={selectedQualityID || ''}>
+        <select className={'app-select'} name="" id="" onChange={onChangeQualityIDHandle} value={selectedQualityID || ''}>
             {qualities.map((value, index, array) => {
                 return <option value={value.id} key={index + 1}>{value.name}</option>;
             })}

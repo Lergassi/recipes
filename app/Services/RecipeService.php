@@ -18,6 +18,8 @@ class RecipeService
     }
 
     public function addProduct(int $recipeID, int $referenceProductID, int $weight): int {
+        if ($weight <= 0) return 0;
+
         $recipePosition = $this->dataManager->findRecipePositionByProduct($recipeID, $referenceProductID);
         if (!$recipePosition) {
             $insertRecipePositionQuery = 'insert into recipe_positions (weight, recipe_id, reference_product_id) VALUES (:weight, :recipe_id, :reference_product_id)';
@@ -45,6 +47,8 @@ class RecipeService
 
     public function removeProduct(int $recipeID, int $referenceProductID, int $weight): int
     {
+        if ($weight <= 0) return 0;
+
         $recipePosition = $this->dataManager->findRecipePositionByProduct($recipeID, $referenceProductID);
         $removedWeight = 0;
         if ($recipePosition) {

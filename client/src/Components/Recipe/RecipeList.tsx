@@ -9,6 +9,7 @@ interface RecipeListProps {
 
 export default function RecipeList(props: RecipeListProps) {
     const [recipes, setRecipes] = useState([]);
+    const [selectedRecipeID, setSelectedRecipeID] = useState<number|null>(null);
 
     useEffect(() => {
         if (props.dishVersionID) {
@@ -26,35 +27,25 @@ export default function RecipeList(props: RecipeListProps) {
 
     function selectHandler(ID: number, event): void {
         event.preventDefault();
+        setSelectedRecipeID(ID);
         props.selectHandler?.(ID, event);
     }
 
     return (
-        <div>
+        <div className={'recipe-list-component'}>
             <h3>Recipes</h3>
-            <div>
-                <table className={'base-table'}>
-                    <tbody>
-                    <tr>
-                        <th>id</th>
-                        <th>name</th>
-                        <th>control</th>
-                    </tr>
+            {recipes.length !== 0 && (
+                <div className={'item-list simple-block'}>
                     {recipes.map((value, index, array) => {
                         return (
-                            <tr key={index}>
-                                <td>{value.id}</td>
-                                <td>{value.name}</td>
-                                <td>
-                                    <button onClick={selectHandler.bind(this, value.id)}>Select</button>
-                                    {/*<button>Delete</button>*/}
-                                </td>
-                            </tr>
+                            <div className={'item-list__item ' + (selectedRecipeID === value.id ? 'item-list__item_selected' : '')} onClick={selectHandler.bind(this, value.id)} key={index}>
+                                <span className={'item-list__item-text'}>{value.name}</span>
+                                {/*<span className={'item-list__edit-button'}></span>*/}
+                            </div>
                         );
                     })}
-                    </tbody>
-                </table>
-            </div>
+                </div>
+            )}
         </div>
     );
 }

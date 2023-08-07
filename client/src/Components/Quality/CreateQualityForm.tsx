@@ -54,17 +54,22 @@ export default function CreateQualityForm(props: CreateQualityFormProps) {
         <div>
             <h3>Create quality</h3>
             <form action="">
-                <div>
-                    <input name={'name'} type="text" value={name} onChange={onChangeNameHandle}/>
+                <div className={'input-group'}>
+                    <span>name: </span>
+                    <input className={'app-input'} type="text" value={name} onChange={onChangeNameHandle}/>
                 </div>
-                <div>
-                    <input name={'sort'} type="text" value={alias} onChange={onChangeAliasHandle}/>
+                <div className={'input-group'}>
+                    <span>alias: </span>
+                    <input className={'app-input'} type="text" value={alias} onChange={onChangeAliasHandle}/>
                 </div>
-                <div>
-                    <input name={'sort'} type="text" value={sort} onChange={onChangeSortHandle}/>
+                <div className={'input-group'}>
+                    <span>sort: </span>
+                    <input className={'app-input'} type="text" value={sort} onChange={onChangeSortHandle}/>
                 </div>
-                <input type="submit" value={'Create'} onClick={submitHandle}/>
-                <button onClick={closeHandler}>Close</button>
+                <div className={'input-group'}>
+                    <input className={'btn'} type="submit" value={'Create'} onClick={submitHandle}/>
+                    <button className={'btn'} onClick={closeHandler}>Close</button>
+                </div>
             </form>
         </div>
     );

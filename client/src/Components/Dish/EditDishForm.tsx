@@ -16,6 +16,8 @@ export default function EditDishForm(props: EditDishFormProps) {
     const [alias, setAlias] = useState('');
     const [qualityID, setQualityID] = useState<number|null>(null);
 
+    const [originalName, setOriginalName] = useState('');
+
     useEffect(() => {
         props.api.request('/dish/get?' + new URLSearchParams({
             id: String(props.ID),
@@ -24,6 +26,8 @@ export default function EditDishForm(props: EditDishFormProps) {
             setName(response.name);
             setAlias(response.alias);
             setQualityID(response.quality_id);
+
+            setOriginalName(response.name);
         });
     }, [props.ID]);
 
@@ -64,26 +68,29 @@ export default function EditDishForm(props: EditDishFormProps) {
     }
 
     return (
-        <div>
-            <h3>Update {name} ({ID})</h3>
+        <div className={'modal-form'}>
+            <h3>Update {originalName} ({ID})</h3>
             <form action="">
-                <div>
+                <div className={'input-group'}>
                     <span>name: </span>
-                    <input type="text" value={name} onChange={onChangeNameHandle}/>
+                    <input className={'app-input'} type="text" value={name} onChange={onChangeNameHandle}/>
                 </div>
-                <div>
+                <div className={'input-group'}>
                     <span>alias: </span>
-                    <input type="text" value={alias} onChange={onChangeAliasHandle}/>
+                    <input className={'app-input'} type="text" value={alias} onChange={onChangeAliasHandle}/>
                 </div>
-                <div>
+                <div className={'input-group'}>
+                    <span>quality: </span>
                     <QualitySelector
                         api={props.api}
                         selectHandler={onChangeQualityIDHandle}
                         selectedQualityID={qualityID}
                     />
                 </div>
-                <input type="submit" value={'Update'} onClick={submitHandle}/>
-                <button onClick={closeHandler}>Close</button>
+                <div className={'input-group'}>
+                    <input className={'btn'} type="submit" value={'Update'} onClick={submitHandle}/>
+                    <button className={'btn'} onClick={closeHandler}>Close</button>
+                </div>
             </form>
         </div>
     );

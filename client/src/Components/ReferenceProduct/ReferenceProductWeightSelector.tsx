@@ -1,13 +1,12 @@
 import {useEffect, useState} from 'react';
 import Api from '../../Api.js';
-import {QualityApiInterface} from '../../Interface/QualityApiInterface.js';
 import {ReferenceProductApiInterface} from '../../Interface/ReferenceProductApiInterface.js';
 
 interface ReferenceProductWeightSelectorProps {
     api: Api;
-    addProductHandler: (ID: number, weight: number) => void;
-    removeProductHandler: (ID: number, weight: number) => void;
-    referenceProductID?: number;
+    addReferenceProductHandler: (ID: number, weight: number) => void;
+    removeReferenceProductHandler: (ID: number, weight: number) => void;
+    referenceProductID?: number;    //todo: Должны быть в одном объекте вместе с весом.
     weight?: number;
 }
 
@@ -37,12 +36,12 @@ export default function ReferenceProductWeightSelector(props: ReferenceProductWe
     }
 
     function addHandler(event): void {
-        props.addProductHandler(referenceProductID, weight);
+        props.addReferenceProductHandler(referenceProductID, weight);
         reset();
     }
 
     function removeHandler(event): void {
-        props.removeProductHandler(referenceProductID, weight);
+        props.removeReferenceProductHandler(referenceProductID, weight);
         reset();
     }
 
@@ -52,16 +51,16 @@ export default function ReferenceProductWeightSelector(props: ReferenceProductWe
     }
 
     return (
-        <div>
-            <select name="" id="" onChange={onChangeReferenceProductIDHandle} value={referenceProductID || ''}>
-                <option value={0} key={0}>Select...</option>
+        <div className={'simple-block'}>
+            <select className={'app-select'} name="" id="" onChange={onChangeReferenceProductIDHandle} value={referenceProductID || ''}>
+                <option value={0} key={0}>Select product...</option>
                 {referenceProducts.map((value, index, array) => {
                     return <option value={value.id} key={index + 1}>{value.name}</option>;
                 })}
             </select>
-            <input value={weight || ''} type="text" onChange={onChangeWeightHandle}/>
-            <button onClick={addHandler}>Add</button>
-            <button onClick={removeHandler}>Remove</button>
+            <input className={'app-input'} value={weight || ''} type="text" onChange={onChangeWeightHandle} placeholder={'weight'}/>
+            <button className={'btn'} onClick={addHandler}>Add</button>
+            <button className={'btn'} onClick={removeHandler}>Remove</button>
         </div>
     );
 }
