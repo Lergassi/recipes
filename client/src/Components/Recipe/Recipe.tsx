@@ -7,6 +7,7 @@ import ReferenceProductWeightSelector from '../ReferenceProduct/ReferenceProduct
 interface RecipeProps {
     api: Api;
     ID?: number;
+    afterBranchCreatedHandler?: any;
 }
 
 export default function Recipe(props: RecipeProps) {
@@ -51,7 +52,8 @@ export default function Recipe(props: RecipeProps) {
         props.api.request('/recipe/commit?' + new URLSearchParams({
             id: String(recipe.id),
         }), response => {
-            console.log('Commit created!');
+            // console.log('Commit created!');
+            fetchRecipe(props.ID);
         });
     }
 
@@ -60,8 +62,9 @@ export default function Recipe(props: RecipeProps) {
             id: String(recipe.id),
             name: branchName,
         }), response => {
-            console.log('Branch created!');
+            // console.log('Branch created!');
             resetBranchControl();
+            props.afterBranchCreatedHandler?.(response);
         });
     }
 

@@ -1,5 +1,6 @@
 import {useEffect, useState} from 'react';
 import Api from '../../Api.js';
+import Recipe from './Recipe.js';
 
 interface RecipeListProps {
     api: Api;
@@ -33,19 +34,29 @@ export default function RecipeList(props: RecipeListProps) {
 
     return (
         <div className={'recipe-list-component'}>
-            <h3>Recipes</h3>
-            {recipes.length !== 0 && (
-                <div className={'item-list simple-block'}>
-                    {recipes.map((value, index, array) => {
-                        return (
-                            <div className={'item-list__item ' + (selectedRecipeID === value.id ? 'item-list__item_selected' : '')} onClick={selectHandler.bind(this, value.id)} key={index}>
-                                <span className={'item-list__item-text'}>{value.name}</span>
-                                {/*<span className={'item-list__edit-button'}></span>*/}
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
+            <div className={'component-wrapper recipe-list-component-wrapper'}>
+                <h3>Recipes</h3>
+                {recipes.length !== 0 && (
+                    <div className={'item-list simple-block'}>
+                        {recipes.map((value, index, array) => {
+                            return (
+                                <div className={'item-list__item ' + (selectedRecipeID === value.id ? 'item-list__item_selected' : '')} onClick={selectHandler.bind(this, value.id)} key={index}>
+                                    <span className={'item-list__item-text'}>{value.name}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+            <div className={'component-wrapper recipe-component-wrapper'}>
+                <Recipe
+                    api={props.api}
+                    ID={selectedRecipeID}
+                    afterBranchCreatedHandler={(value) => {
+                        fetchItems(props.dishVersionID);
+                    }}
+                />
+            </div>
         </div>
     );
 }

@@ -41,19 +41,12 @@ export default function RecipeManager(props: RecipeManagerProps) {
                     selectHandler={selectDishVersionHandler}
                 />
             </div>
-            <div className={'component-wrapper recipe-list-component-wrapper'}>
-                <RecipeList
-                    api={props.api}
-                    dishVersionID={selectedDishVersionID}
-                    selectHandler={selectRecipeHandler}
-                />
-            </div>
-            <div className={'component-wrapper recipe-component-wrapper'}>
-                <Recipe
-                    api={props.api}
-                    ID={selectedRecipeID}
-                />
-            </div>
+            <RecipeList
+                api={props.api}
+                dishVersionID={selectedDishVersionID}
+                selectHandler={selectRecipeHandler}
+            />
+            {/* todo: Recipe перемещен внутрь списка для обновления после создания ветки. Найти решение без вложения. */}
         </div>
     );
 }
