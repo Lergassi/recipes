@@ -72,15 +72,15 @@ export default function EditDishForm(props: EditDishFormProps) {
             <h3>Update {originalName} ({ID})</h3>
             <form action="">
                 <div className={'input-group'}>
-                    <span>name: </span>
+                    <span className={'input-group__label'}>name: </span>
                     <input className={'app-input'} type="text" value={name} onChange={onChangeNameHandle}/>
                 </div>
                 <div className={'input-group'}>
-                    <span>alias: </span>
+                    <span className={'input-group__label'}>alias: </span>
                     <input className={'app-input'} type="text" value={alias} onChange={onChangeAliasHandle}/>
                 </div>
                 <div className={'input-group'}>
-                    <span>quality: </span>
+                    <span className={'input-group__label'}>quality: </span>
                     <QualitySelector
                         api={props.api}
                         selectHandler={onChangeQualityIDHandle}

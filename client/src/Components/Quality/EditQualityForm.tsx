@@ -62,15 +62,15 @@ export default function EditQualityForm(props: EditQualityFormProps) {
             <h3>Edit quality {name} ({ID})</h3>
             <form action="">
                 <div className={'input-group'}>
-                    <span>name: </span>
+                    <span className={'input-group__label'}>name: </span>
                     <input className={'app-input'} type="text" value={name} onChange={onChangeNameHandle}/>
                 </div>
                 <div className={'input-group'}>
-                    <span>alias: </span>
+                    <span className={'input-group__label'}>alias: </span>
                     <input className={'app-input'} type="text" value={alias} onChange={onChangeAliasHandle}/>
                 </div>
                 <div className={'input-group'}>
-                    <span>sort: </span>
+                    <span className={'input-group__label'}>sort: </span>
                     <input className={'app-input'} type="text" value={sort} onChange={onChangeSortHandle}/>
                 </div>
                 <div className={'input-group'}>

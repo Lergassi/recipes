@@ -1,9 +1,9 @@
-import Quality from './Components/Quality/Quality.js';
-import ReferenceProduct from './Components/ReferenceProduct/ReferenceProduct.js';
+import Quality from './Quality/Quality.js';
+import ReferenceProduct from './ReferenceProduct/ReferenceProduct.js';
 import RecipeManager from './RecipeManager.js';
-import Api from './Api.js';
+import Api from '../Api.js';
 import {useState} from 'react';
-import {EntityID} from './Types/EntityID.js';
+import {EntityID} from '../Types/EntityID.js';
 
 const params = {
     host: 'http://api.recipes.sd44.ru',

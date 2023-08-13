@@ -1,9 +1,9 @@
-import DishList from './Components/Dish/DishList.js';
-import DishVersionList from './Components/DishVersion/DishVersionList.js';
-import RecipeList from './Components/Recipe/RecipeList.js';
-import Recipe from './Components/Recipe/Recipe.js';
+import DishList from './Dish/DishList.js';
+import DishVersionList from './DishVersion/DishVersionList.js';
+import RecipeList from './Recipe/RecipeList.js';
+import Recipe from './Recipe/Recipe.js';
 import {useEffect, useState} from 'react';
-import Api from './Api.js';
+import Api from '../Api.js';
 
 interface RecipeManagerProps {
     api: Api;
