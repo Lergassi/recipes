@@ -2,35 +2,27 @@
 
 namespace App\Services;
 
+use Symfony\Component\Validator\Constraint;
+use Symfony\Component\Validator\Validation;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+
 class Validator
 {
-    public function validateRequiredKey(array $array, string|int $key, bool $isEmptyValidate = true): bool
+    private ValidatorInterface $validator;
+
+    public function __construct()
     {
-        $isSet = isset($array[$key]);
-
-        if ($isEmptyValidate && $isSet) {
-            $isSet &= !empty($array[$key]);
-        }
-
-        return $isSet;
+        $this->validator = Validation::createValidator();
     }
 
-    /**
-     * @param array $array
-     * @param (string|int)[] $keys
-     * @param bool $isEmptyValidate
-     * @return bool
-     */
-    public function validateRequiredKeys(array $array, array $keys, bool $isEmptyValidate = true): bool
+    //todo $errorInterface не builder, а интерфейс сбора ошибок с методом add/addError. Из-за return $this в builder единый интерфейс пока сделать не получается.
+    public function validate(mixed $value, Constraint|array $constraints , ResponseBuilder $errorInterface): int
     {
-        if (!count($array)) return false;
-        if (!count($keys)) return false;
-
-        $result = true;
-        foreach ($keys as $key) {
-            $result &= $this->validateRequiredKey($array, $key, $isEmptyValidate);
+        $violations = $this->validator->validate($value, $constraints);
+        if ($violations->count()) {
+            $errorInterface->addViolations($violations);
         }
 
-        return $result;
+        return $violations->count();
     }
 }

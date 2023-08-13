@@ -2,11 +2,16 @@
 
 namespace App\Controllers;
 
+use App\Services\AliasGenerator;
 use App\Services\DataManager;
 use App\Services\ResponseBuilder;
 use App\Services\Validator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Symfony\Component\Validator\Constraints\Collection;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Required;
 
 class ReferenceProductController
 {
@@ -14,35 +19,62 @@ class ReferenceProductController
     private DataManager $dataManager;
     private ResponseBuilder $responseBuilder;
     private Validator $validator;
+    private AliasGenerator $aliasGenerator;
 
-    public function __construct(\PDO $pdo, ResponseBuilder $responseBuilder, Validator $validator, DataManager $dataManager)
+    public function __construct(
+        \PDO             $pdo,
+        ResponseBuilder  $responseBuilder,
+        Validator $validator,
+        DataManager      $dataManager,
+        AliasGenerator   $aliasGenerator,
+    )
     {
         $this->pdo = $pdo;
         $this->responseBuilder = $responseBuilder;
         $this->validator = $validator;
         $this->dataManager = $dataManager;
+        $this->aliasGenerator = $aliasGenerator;
     }
 
     public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
-
-        if (!$this->validator->validateRequiredKeys($requestData, [
-            'name',
-            'alias',
-        ])) {
-            return $this->responseBuilder
-                ->addError('Не указаны обязательные параметры.')
-                ->build($response);
-        }
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'name' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'alias' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'sort' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
 
         $data = [
             'name' => $requestData['name'],
             'alias' => $requestData['alias'],
-            'sort' => isset($requestData['sort']) ? intval($requestData['sort']) : 500,
+            'sort' => intval($requestData['sort']),
         ];
 
-        //todo: validate data
+        if ($this->validator->validate($data, new Collection([
+            'fields' => [
+                'name' => new Required([
+                    new Length(['min' => 1, 'max' => 64]),
+                ]),
+                'alias' => new Required([
+                    new Length(['min' => 1, 'max' => 100]),
+                    //unique
+                ]),
+            ],
+            'allowExtraFields' => true,
+        ]), $this->responseBuilder)) return $this->responseBuilder->build($response);
 
         $query = 'insert into reference_products (name, alias, sort) values (:name, :alias, :sort)';
 
@@ -62,14 +94,17 @@ class ReferenceProductController
     public function get(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
-
-        if (!$this->validator->validateRequiredKeys($requestData, [
-            'id',
-        ])) {
-            return $this->responseBuilder
-                ->addError('Не указаны обязательные параметры.')
-                ->build($response);
-        }
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
 
         $referenceProduct = $this->dataManager->findOneReferenceProduct(intval($requestData['id']));
 
@@ -90,17 +125,26 @@ class ReferenceProductController
     public function update(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
-
-        if (!$this->validator->validateRequiredKeys($requestData, [
-            'id',
-            'name',
-            'alias',
-            'sort',
-        ])) {
-            return $this->responseBuilder
-                ->addError('Не указаны обязательные параметры.')
-                ->build($response);
-        }
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'name' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'alias' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'sort' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
 
         $data = [
             'id' => intval($requestData['id']),
@@ -109,7 +153,18 @@ class ReferenceProductController
             'sort' => intval($requestData['sort']),
         ];
 
-        //todo: validate data
+        if ($this->validator->validate($data, new Collection([
+            'fields' => [
+                'name' => new Required([
+                    new Length(['min' => 1, 'max' => 64]),
+                ]),
+                'alias' => new Required([
+                    new Length(['min' => 1, 'max' => 100]),
+                    //unique
+                ]),
+            ],
+            'allowExtraFields' => true,
+        ]), $this->responseBuilder)) return $this->responseBuilder->build($response);
 
         $query = 'update reference_products set name = :name, alias = :alias, sort = :sort where id = :id';
 
@@ -131,14 +186,17 @@ class ReferenceProductController
     public function delete(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
-
-        if (!$this->validator->validateRequiredKeys($requestData, [
-            'id',
-        ])) {
-            return $this->responseBuilder
-                ->addError('Не указаны обязательные параметры.')
-                ->build($response);
-        }
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
 
         $ID = intval($request->getQueryParams()['id']);
 

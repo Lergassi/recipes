@@ -2,6 +2,7 @@ import {useEffect, useState} from 'react';
 import _ from 'lodash';
 import Api from '../../Api.js';
 import QualitySelector from '../Quality/QualitySelector.js';
+import {generateAlias} from '../../generateAlias.js';
 
 interface CreateDishFormProps {
     api: Api;
@@ -15,12 +16,18 @@ export default function CreateDishVersionForm(props: CreateDishFormProps) {
     const [alias, setAlias] = useState('');
     const [qualityID, setQualityID] = useState<number|null>(null);
 
+    const [autoGenerateAlias, setAutoGenerateAlias] = useState(true);
+
     function onChangeNameHandle(event) {
         setName(event.target.value);
+        if(autoGenerateAlias) {
+            setAlias(generateAlias(event.target.value));
+        }
     }
 
     function onChangeAliasHandle(event) {
         setAlias(event.target.value);
+        setAutoGenerateAlias(false);
     }
 
     function onChangeQualityIDHandle(ID: number) {

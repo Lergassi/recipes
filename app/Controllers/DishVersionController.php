@@ -2,7 +2,6 @@
 
 namespace App\Controllers;
 
-use App\Factories\BranchFactory;
 use App\Factories\RecipeFactory;
 use App\Services\AliasGenerator;
 use App\Services\DataManager;
@@ -10,31 +9,29 @@ use App\Services\ResponseBuilder;
 use App\Services\Validator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Symfony\Component\Validator\Constraints\Collection;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Required;
 
 class DishVersionController
 {
     private \PDO $pdo;
-    private BranchFactory $branchFactory;
     private RecipeFactory $recipeFactory;
-    private AliasGenerator $aliasGenerator;
     private Validator $validator;
     private ResponseBuilder $responseBuilder;
     private DataManager $dataManager;
 
     public function __construct(
         \PDO            $pdo,
-        BranchFactory   $branchFactory,
         RecipeFactory   $recipeFactory,
-        AliasGenerator  $aliasGenerator,
         Validator       $validator,
-        ResponseBuilder $responseBuilder, \App\Services\DataManager $dataManager,
+        ResponseBuilder $responseBuilder,
+        DataManager     $dataManager,
     )
     {
         $this->pdo = $pdo;
         $this->responseBuilder = $responseBuilder;
         $this->validator = $validator;
-        $this->aliasGenerator = $aliasGenerator;
-        $this->branchFactory = $branchFactory;
         $this->recipeFactory = $recipeFactory;
         $this->dataManager = $dataManager;
     }
@@ -42,24 +39,34 @@ class DishVersionController
     public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
-
-        if (!$this->validator->validateRequiredKeys($requestData, [
-            'name',
-            'dish_id',
-        ])) {
-            return $this->responseBuilder
-                ->addError('Не указаны обязательные параметры.')
-                ->build($response);
-        }
+        if ($this->validator->validate($requestData, [
+            //todo: Возможно стоит сделать отдельный валидатор для простого наличия всех полей.
+            new Collection([
+                'fields' => [
+                    'name' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'alias' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'dish_id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'quality_id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
 
         $data = [
             'name' => $requestData['name'],
-            'alias' => isset($requestData['alias']) && !empty($requestData['alias']) ? $requestData['alias'] : $this->aliasGenerator->generate($requestData['name'], 1),   //todo: index получить на основе бд.
+            'alias' => $requestData['alias'],
             'dish_id' => intval($requestData['dish_id']),
-            'quality_id' => isset($requestData['quality_id']) && !empty($requestData['quality_id']) ? intval($requestData['quality_id']) : $this->dataManager->findOneQualityByAlias('common')['id'], //todo: Сделать значения по умолчанию и/или удобное использование alias в коде.
+            'quality_id' => intval($requestData['quality_id']),
         ];
-
-        //todo: validate data
 
         $this->pdo->beginTransaction();
 
@@ -88,14 +95,17 @@ class DishVersionController
     public function all(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
-
-        if (!$this->validator->validateRequiredKeys($requestData, [
-            'dish_id',
-        ])) {
-            return $this->responseBuilder
-                ->addError('Не указаны обязательные параметры.')
-                ->build($response);
-        }
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'dish_id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
 
         //todo: Совместить с get логикой.
         $dishVersions = $this->dataManager->findDishVersions(intval($requestData['dish_id']));
@@ -114,14 +124,17 @@ class DishVersionController
     public function get(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
-
-        if (!$this->validator->validateRequiredKeys($requestData, [
-            'id',
-        ])) {
-            return $this->responseBuilder
-                ->addError('Не указаны обязательные параметры.')
-                ->build($response);
-        }
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'dish_id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
 
         $data = [
             'id' => intval($requestData['id']),
@@ -147,17 +160,26 @@ class DishVersionController
     public function update(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
-
-        if (!$this->validator->validateRequiredKeys($requestData, [
-            'id',
-            'name',
-            'alias',
-            'quality_id',
-        ])) {
-            return $this->responseBuilder
-                ->addError('Не указаны обязательные параметры.')
-                ->build($response);
-        }
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'name' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'alias' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'quality_id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
 
         $data = [
             'id' => intval($requestData['id']),
@@ -165,8 +187,6 @@ class DishVersionController
             'alias' => $requestData['alias'],
             'quality_id' => intval($requestData['quality_id']),
         ];
-
-        //todo: validate data
 
         $query = 'update dish_versions set name = :name, alias = :alias, quality_id = :quality_id where id = :id';
 
@@ -188,14 +208,17 @@ class DishVersionController
     public function delete(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
-
-        if (!$this->validator->validateRequiredKeys($requestData, [
-            'id',
-        ])) {
-            return $this->responseBuilder
-                ->addError('Не указаны обязательные параметры.')
-                ->build($response);
-        }
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
 
         $ID = intval($request->getQueryParams()['id']);
 

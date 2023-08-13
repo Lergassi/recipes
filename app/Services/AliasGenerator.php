@@ -4,6 +4,9 @@ namespace App\Services;
 
 use Behat\Transliterator\Transliterator;
 
+/**
+ * @deprecated Перенесено на толстый клиент.
+ */
 class AliasGenerator
 {
     private string $separator = '_';
@@ -17,6 +20,7 @@ class AliasGenerator
         $this->dataManager = $dataManager;
     }
 
+//    public function generate(string $string, int $number = null): string
     public function generate(string $string, int $number = null): string
     {
         if ($number !== null) {

@@ -2,7 +2,7 @@
 
 namespace App\Controllers\SandboxControllers;
 
-use App\Services\Validator;
+use App\Services\RequireValidator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -17,7 +17,7 @@ class ValidationSandboxController extends AbstractSandboxController
 
     private function _getStarted()
     {
-        $validation = new Validator();
+        $validation = new RequireValidator();
 
         $array = [
             'id' => 42,

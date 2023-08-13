@@ -2,6 +2,7 @@ import {useEffect, useState} from 'react';
 import _ from 'lodash';
 import Api from '../../Api.js';
 import QualitySelector from '../Quality/QualitySelector.js';
+import {generateAlias} from '../../generateAlias.js';
 
 interface EditDishFormProps {
     api: Api;
@@ -17,6 +18,7 @@ export default function EditDishForm(props: EditDishFormProps) {
     const [qualityID, setQualityID] = useState<number|null>(null);
 
     const [originalName, setOriginalName] = useState('');
+    const [autoGenerateAlias, setAutoGenerateAlias] = useState(true);
 
     useEffect(() => {
         props.api.request('/dish/get?' + new URLSearchParams({

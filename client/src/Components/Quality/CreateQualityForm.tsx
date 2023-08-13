@@ -1,6 +1,8 @@
 import {useEffect, useState} from 'react';
 import _ from 'lodash';
 import Api from '../../Api.js';
+import { transliterate, slugify } from 'transliteration';
+import {generateAlias} from '../../generateAlias.js';
 
 interface CreateQualityFormProps {
     api: Api;
@@ -15,12 +17,18 @@ export default function CreateQualityForm(props: CreateQualityFormProps) {
     const [alias, setAlias] = useState('');
     const [sort, setSort] = useState(sortDefault);
 
+    const [autoGenerateAlias, setAutoGenerateAlias] = useState(true);
+
     function onChangeNameHandle(event) {
         setName(event.target.value);
+        if(autoGenerateAlias) {
+            setAlias(generateAlias(event.target.value));
+        }
     }
 
     function onChangeAliasHandle(event) {
         setAlias(event.target.value);
+        setAutoGenerateAlias(false);
     }
 
     function onChangeSortHandle(event) {

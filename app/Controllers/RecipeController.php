@@ -2,7 +2,6 @@
 
 namespace App\Controllers;
 
-use App\Factories\BranchFactory;
 use App\Factories\RecipeFactory;
 use App\Services\DataManager;
 use App\Services\RecipeService;
@@ -10,11 +9,14 @@ use App\Services\ResponseBuilder;
 use App\Services\Validator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Symfony\Component\Validator\Constraints\Collection;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Required;
 
 class RecipeController
 {
     private \PDO $pdo;
-    private BranchFactory $branchFactory;
     private RecipeFactory $recipeFactory;
     private Validator $validator;
     private ResponseBuilder $responseBuilder;
@@ -22,20 +24,18 @@ class RecipeController
     private RecipeService $recipeService;
 
     public function __construct(
-        \PDO            $pdo,
-        ResponseBuilder $responseBuilder,
-        Validator       $validator,
-        DataManager     $dataManager,
-        BranchFactory   $branchFactory,
-        RecipeFactory   $recipeFactory,
-        RecipeService   $recipeService,
+        \PDO             $pdo,
+        ResponseBuilder  $responseBuilder,
+        Validator $validator,
+        DataManager      $dataManager,
+        RecipeFactory    $recipeFactory,
+        RecipeService    $recipeService,
     )
     {
         $this->pdo = $pdo;
         $this->responseBuilder = $responseBuilder;
         $this->validator = $validator;
         $this->dataManager = $dataManager;
-        $this->branchFactory = $branchFactory;
         $this->recipeFactory = $recipeFactory;
         $this->recipeService = $recipeService;
     }
@@ -43,20 +43,24 @@ class RecipeController
     public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
-
-        if (!$this->validator->validateRequiredKeys($requestData, [
-            'name',
-            'dish_version_id',
-        ])) {
-            $this->responseBuilder->addError('Не указаны обязательные параметры.');
-
-            return $this->responseBuilder->build($response);
-        }
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'name' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'dish_version_id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
 
         $data = [
             'name' => $requestData['name'],
             'dish_version_id' => intval($requestData['dish_version_id']),
-            'quality_id' => isset($requestData['quality_id']) ? intval($requestData['quality_id']) : $this->dataManager->findOneQualityByAlias('common')['id'],
         ];
 
         $recipeID = $this->recipeFactory->create($data['name'], $data['dish_version_id']);
@@ -69,16 +73,23 @@ class RecipeController
     public function addProduct(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
-
-        if (!$this->validator->validateRequiredKeys($requestData, [
-            'id',
-            'reference_product_id',
-            'weight',
-        ])) {
-            return $this->responseBuilder
-                ->addError('Не указаны обязательные параметры.')
-                ->build($response);
-        }
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'reference_product_id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'weight' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
 
         $data = [
             'id' => intval($requestData['id']),
@@ -104,16 +115,24 @@ class RecipeController
     public function removeProduct(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
-
-        if (!$this->validator->validateRequiredKeys($requestData, [
-            'id',
-            'reference_product_id',
-            'weight',
-        ])) {
-            return $this->responseBuilder
-                ->addError('Не указаны обязательные параметры.')
-                ->build($response);
-        }
+        //todo: Одинаковая логика с add_product.
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'reference_product_id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'weight' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
 
         $data = [
             'id' => intval($requestData['id']),
@@ -138,14 +157,17 @@ class RecipeController
     public function all(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
-
-        if (!$this->validator->validateRequiredKeys($requestData, [
-            'dish_version_id',
-        ])) {
-            return $this->responseBuilder
-                ->addError('Не указаны обязательные параметры.')
-                ->build($response);
-        }
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'dish_version_id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
 
         $data = [
             'dish_version_id' => intval($requestData['dish_version_id']),
@@ -161,14 +183,17 @@ class RecipeController
     public function get(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
-
-        if (!$this->validator->validateRequiredKeys($requestData, [
-            'id',
-        ])) {
-            return $this->responseBuilder
-                ->addError('Не указаны обязательные параметры.')
-                ->build($response);
-        }
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
 
         $data = [
             'id' => intval($requestData['id']),
@@ -203,14 +228,17 @@ class RecipeController
     public function commit(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
-
-        if (!$this->validator->validateRequiredKeys($requestData, [
-            'id',
-        ])) {
-            return $this->responseBuilder
-                ->addError('Не указаны обязательные параметры.')
-                ->build($response);
-        }
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
 
         $data = [
             'id' => intval($requestData['id']),
@@ -236,28 +264,6 @@ class RecipeController
 
         $previousRecipeCommit = $this->dataManager->findPreviousRecipeCommit($recipe['id']);
 
-//        $insertRecipeCommitQuery = 'insert into recipe_commits (recipe_id, previous_commit_id) VALUES (:recipe_id, :previous_commit_id)';
-//        $insertRecipeCommitStmt = $this->pdo->prepare($insertRecipeCommitQuery);
-//
-//        $insertRecipeCommitStmt->bindValue(':recipe_id', $recipe['id']);
-//        $insertRecipeCommitStmt->bindValue(':previous_commit_id', $previousRecipeCommit['id'] ?? null);
-//
-//        $insertRecipeCommitStmt->execute();
-//        $recipeCommitID = $this->pdo->lastInsertId();
-//
-//        $insertRecipeCommitPositionQuery = 'insert into recipe_commit_positions (weight, reference_product_id, recipe_commit_id) VALUES (:weight, :reference_product_id, :recipe_commit_id)';
-//        $insertRecipeCommitPositionStmt = $this->pdo->prepare($insertRecipeCommitPositionQuery);
-//
-//        foreach ($recipePositions as $recipePosition) {
-//            $insertRecipeCommitPositionStmt->bindValue(':weight', $recipePosition['weight']);
-//            $insertRecipeCommitPositionStmt->bindValue(':reference_product_id', $recipePosition['reference_product_id']);
-//            $insertRecipeCommitPositionStmt->bindValue(':recipe_commit_id', $recipeCommitID);
-//
-//            $insertRecipeCommitPositionStmt->execute();
-//        }
-//
-//        $this->recipeService->updateHead($recipe['id'], $recipeCommitID);
-
         $recipeCommitID = $this->recipeService->commit($recipe['id'], $previousRecipeCommit['id'] ?? null);
 
         $this->pdo->commit();
@@ -268,20 +274,35 @@ class RecipeController
     public function branch(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
-
-        if (!$this->validator->validateRequiredKeys($requestData, [
-            'id',
-            'name',
-        ])) {
-            return $this->responseBuilder
-                ->addError('Не указаны обязательные параметры.')
-                ->build($response);
-        }
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'name' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
 
         $data = [
             'id' => intval($requestData['id']),
             'name' => $requestData['name'],
         ];
+
+        if ($this->validator->validate($data, new Collection([
+            'fields' => [
+                'name' => new Required([
+                    new Length(['min' => 1, 'max' => 64]),
+                ]),
+                //alias unique
+            ],
+            'allowExtraFields' => true,
+        ]), $this->responseBuilder)) return $this->responseBuilder->build($response);
 
         $recipe = $this->dataManager->findOneRecipe($data['id']);
         if (!$recipe) {
@@ -293,18 +314,13 @@ class RecipeController
         $head = $this->dataManager->findHeadRecipeCommit($recipe['id']);
         if (!$head) {
             return $this->responseBuilder
-                ->addError('Нельзя создать рецепт. В рецепте нет ни одного зафиксированного изменения.')
+                ->addError('Нельзя создать ветку. В рецепте нет ни одного зафиксированного изменения.')
                 ->build($response);
         }
 
-//        dump($head);
-//        dump($this->dataManager->findCommitRecipePositions($head['id']));
-//        dump($this->dataManager->findRecipePositions($recipe['id']));
-//        dump($this->dataManager->findDiffWithCurrentRecipe($recipe['id']));
-//        dd($this->dataManager->hasDiffWithCurrentRecipe($recipe['id']));
         if ($this->dataManager->hasDiffWithCurrentRecipe($recipe['id'])) {
             return $this->responseBuilder
-                ->addError('Нельзя создать рецепт. Текущий рецепт имеет незафиксированные изменения.')
+                ->addError('Нельзя создать ветку. Текущий рецепт имеет незафиксированные изменения.')
                 ->build($response);
         }
 
@@ -318,11 +334,6 @@ class RecipeController
         }
 
         $this->recipeService->commit($newRecipeID);
-
-//        $this->recipeService->updateHead($newRecipeID, $head['id']);
-
-//        $newRecipeCommitID = $this->recipeService->copyRecipeCommit($head['id']);
-//        $this->recipeService->updateHead($newRecipeID, $newRecipeCommitID);
 
         $this->pdo->commit();
 

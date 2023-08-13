@@ -2,11 +2,16 @@
 
 namespace App\Controllers;
 
+use App\Services\AliasGenerator;
 use App\Services\DataManager;
 use App\Services\ResponseBuilder;
 use App\Services\Validator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Symfony\Component\Validator\Constraints\Collection;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Required;
 
 class QualityController
 {
@@ -15,27 +20,39 @@ class QualityController
     private ResponseBuilder $responseBuilder;
     private Validator $validator;
 
-    public function __construct(\PDO $pdo, ResponseBuilder $responseBuilder, Validator $validator, DataManager $dataManager)
+    public function __construct(
+        \PDO            $pdo,
+        ResponseBuilder $responseBuilder,
+        DataManager     $dataManager,
+        Validator       $validator,
+    )
     {
         $this->pdo = $pdo;
         $this->responseBuilder = $responseBuilder;
-        $this->validator = $validator;
         $this->dataManager = $dataManager;
+        $this->validator = $validator;
     }
 
     public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
-
-        if (!$this->validator->validateRequiredKeys($requestData, [
-            'name',
-            'alias',
-            'sort',
-        ])) {
-            return $this->responseBuilder
-                ->addError('Не указаны обязательные параметры.')
-                ->build($response);
-        }
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'name' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'alias' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'sort' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
 
         $data = [
             'name' => $requestData['name'],
@@ -43,7 +60,18 @@ class QualityController
             'sort' => intval($requestData['sort']),
         ];
 
-        //todo: validate data
+        if ($this->validator->validate($data, new Collection([
+            'fields' => [
+                'name' => new Required([
+                    new Length(['min' => 1, 'max' => 64]),
+                ]),
+                'alias' => new Required([
+                    new Length(['min' => 1, 'max' => 100]),
+                    //unique
+                ]),
+            ],
+            'allowExtraFields' => true,
+        ]), $this->responseBuilder)) return $this->responseBuilder->build($response);
 
         $query = 'insert into qualities (name, alias, sort) values (:name, :alias, :sort)';
 
@@ -72,14 +100,17 @@ class QualityController
     public function get(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
-
-        if (!$this->validator->validateRequiredKeys($requestData, [
-            'id',
-        ])) {
-            return $this->responseBuilder
-                ->addError('Не указаны обязательные параметры.')
-                ->build($response);
-        }
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
 
         $quality = $this->dataManager->findOneQuality(intval($requestData['id']));
 
@@ -91,17 +122,26 @@ class QualityController
     public function update(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
-
-        if (!$this->validator->validateRequiredKeys($requestData, [
-            'id',
-            'name',
-            'alias',
-            'sort',
-        ])) {
-            return $this->responseBuilder
-                ->addError('Не указаны обязательные параметры.')
-                ->build($response);
-        }
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'name' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'alias' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                    'sort' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
 
         $data = [
             'id' => intval($requestData['id']),
@@ -110,7 +150,18 @@ class QualityController
             'sort' => intval($requestData['sort']),
         ];
 
-        //todo: validate data
+        if ($this->validator->validate($data, new Collection([
+            'fields' => [
+                'name' => new Required([
+                    new Length(['min' => 1, 'max' => 64]),
+                ]),
+                'alias' => new Required([
+                    new Length(['min' => 1, 'max' => 100]),
+                ]),
+                //alias unique
+            ],
+            'allowExtraFields' => true,
+        ]), $this->responseBuilder)) return $this->responseBuilder->build($response);
 
         $query = 'update qualities set name = :name, alias = :alias, sort = :sort where id = :id';
 
@@ -132,14 +183,17 @@ class QualityController
     public function delete(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
-
-        if (!$this->validator->validateRequiredKeys($requestData, [
-            'id',
-        ])) {
-            return $this->responseBuilder
-                ->addError('Не указаны обязательные параметры.')
-                ->build($response);
-        }
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
 
         $ID = intval($request->getQueryParams()['id']);
 

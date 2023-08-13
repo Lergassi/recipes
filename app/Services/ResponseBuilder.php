@@ -6,6 +6,7 @@ use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Psr7\Headers;
 use Slim\Psr7\Response;
+use Symfony\Component\Validator\ConstraintViolationListInterface;
 
 class ResponseBuilder
 {
@@ -35,8 +36,16 @@ class ResponseBuilder
         return $this;
     }
 
+    public function addViolations(ConstraintViolationListInterface $violationList): ResponseBuilder
+    {
+        foreach ($violationList as $item) {
+            $this->addError($item->getMessage());
+        }
+
+        return $this;
+    }
+
     public function build(ResponseInterface $response = null): ResponseInterface
-//    public function build(ResponseInterface $response): ResponseInterface
     {
         $headers = new Headers();
         $headers->addHeader('Content-type', 'application/json');
@@ -62,5 +71,10 @@ class ResponseBuilder
         $response->getBody()->write($this->serializer->encode($responseBody));
 
         return $response;
+    }
+
+    public function hasErrors(): bool
+    {
+        return count($this->errors);
     }
 }

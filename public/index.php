@@ -5,6 +5,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 
 use App\Debug\InitCustomDumper;
+use App\Services\UniqueConstraint;
 use Dotenv\Dotenv;
 use Psr\Container\ContainerInterface;
 use Slim\Factory\AppFactory;
@@ -30,6 +31,7 @@ $containerBuilder->addDefinitions([
             ]
         );
     },
+    UniqueConstraint::class => \DI\autowire()->property('pdo', \DI\get(PDO::class))
 ]);
 
 $container = $containerBuilder->build();

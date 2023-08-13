@@ -7,10 +7,5 @@ const root = createRoot(document.getElementById("root"));
 root.render(
     <StrictMode>
         <App />
-        {/*<HelloWorld/>*/}
-        {/*asd*/}
     </StrictMode>
-    // <div>
-    //     <App/>
-    // </div>
 );
