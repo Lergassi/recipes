@@ -2,9 +2,10 @@
 
 namespace App\Controllers\SandboxControllers;
 
+use App\Factories\ExistsConstraintFactory;
+use App\Factories\UniqueConstraintFactory;
 use App\Services\AliasGenerator;
-use App\Services\UniqueConstraint;
-use App\Services\Validator;
+use App\Services\Validation\Validator;
 use Behat\Transliterator\Transliterator;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -125,10 +126,60 @@ class MainSandboxController
 
     private function devUniqueConstraint(ServerRequestInterface $request)
     {
+        /** @var UniqueConstraintFactory $uniqueConstraintFactory */
+        $uniqueConstraintFactory = $this->container->get(UniqueConstraintFactory::class);
+        /** @var ExistsConstraintFactory $existsConstraintFactory */
+        $existsConstraintFactory = $this->container->get(ExistsConstraintFactory::class);
+
+//        dump(new UniqueConstraint([
+//            'table' => 'qualities',
+//            'field' => 'alias',
+////                'value' => 'common',
+//        ]));
+//        dump($this->container->get(UniqueConstraint::class));
         $symfonyValidator = Validation::createValidator();
-        $value = 'this is name';
+//        $value = 'this is name';
+        $value = 'uncommon';
         dump($symfonyValidator->validate($value, [
-            $this->container->get(UniqueConstraint::class),
+            $uniqueConstraintFactory->create([
+                'table' => 'qualities',
+                'column' => 'alias',
+//                'existsID' => 2,
+                'existsID' => 1,
+            ]),
+//            $this->container->get(UniqueConstraint::class),
+//            new UniqueConstraint([
+//                'table' => 'qualities',
+//                'field' => 'alias',
+////                'value' => 'common',
+//            ]),
+        ]));
+
+//        $collection = [
+//            'alias' => 'uncommon',
+////            'alias' => '',
+//        ];
+//        dump($symfonyValidator->validate($collection, new Collection([
+//            'fields' => [
+//                'alias' => new Required([
+//                    $uniqueConstraintFactory->create([
+//                        'table' => 'qualities',
+//                        'column' => 'alias',
+//                    ]),
+//                ]),
+//            ],
+//        ])));
+
+//        $value = 1;
+        $value = 42;
+        dump($symfonyValidator->validate($value, [
+            $existsConstraintFactory->create([
+                'table' => 'qualities',
+//                'column' => 'alias',
+//                'existsID' => 2,
+//                'existsID' => 1,
+            ]),
+//            $this->container->get(UniqueConstraint::class),
 //            new UniqueConstraint([
 //                'table' => 'qualities',
 //                'field' => 'alias',

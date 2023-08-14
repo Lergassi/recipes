@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+/**
+ * @indev
+ */
 class RequestData
 {
     private mixed $data;

@@ -1,14 +1,16 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Validation;
 
 use Symfony\Component\Validator\Constraint;
 
 class UniqueConstraint extends Constraint
 {
+    public string $message = 'Значение {{ value }} уже используется.';
+
     public string $table = '';
-    public string $field = '';
-    public mixed $value = '';
+    public string $column = '';
+    public ?int $existsID = null;
 
     public \PDO $pdo;
 

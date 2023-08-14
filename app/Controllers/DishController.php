@@ -2,10 +2,12 @@
 
 namespace App\Controllers;
 
-use App\Services\AliasGenerator;
+use App\Factories\ExistsConstraintFactory;
+use App\Factories\UniqueConstraintFactory;
 use App\Services\DataManager;
 use App\Services\ResponseBuilder;
-use App\Services\Validator;
+use App\Services\Validation\Validator;
+use PDO;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\Validator\Constraints\Collection;
@@ -15,25 +17,28 @@ use Symfony\Component\Validator\Constraints\Required;
 
 class DishController
 {
-    private \PDO $pdo;
+    private PDO $pdo;
     private DataManager $dataManager;
-    private AliasGenerator $aliasGenerator;
+    private UniqueConstraintFactory $uniqueConstraintFactory;
+    private ExistsConstraintFactory $existsConstraintFactory;
     private ResponseBuilder $responseBuilder;
     private Validator $validator;
 
     public function __construct(
-        \PDO             $pdo,
-        ResponseBuilder  $responseBuilder,
-        Validator $validator,
-        AliasGenerator   $aliasGenerator,
-        DataManager      $dataManager,
+        PDO                     $pdo,
+        ResponseBuilder         $responseBuilder,
+        Validator               $validator,
+        DataManager             $dataManager,
+        UniqueConstraintFactory $uniqueConstraintFactory,
+        ExistsConstraintFactory $existsConstraintFactory,
     )
     {
         $this->pdo = $pdo;
         $this->responseBuilder = $responseBuilder;
         $this->validator = $validator;
-        $this->aliasGenerator = $aliasGenerator;
         $this->dataManager = $dataManager;
+        $this->uniqueConstraintFactory = $uniqueConstraintFactory;
+        $this->existsConstraintFactory = $existsConstraintFactory;
     }
 
     public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -70,9 +75,16 @@ class DishController
                 ]),
                 'alias' => new Required([
                     new Length(['min' => 1, 'max' => 100]),
-                    //unique
+                    $this->uniqueConstraintFactory->create([
+                        'table' => 'dishes',
+                        'column' => 'alias',
+                    ]),
                 ]),
-                //quality_id exists
+                'quality_id' => new Required([
+                    $this->existsConstraintFactory->create([
+                        'table' => 'qualities',
+                    ]),
+                ]),
             ],
             'allowExtraFields' => true,
         ]), $this->responseBuilder)) return $this->responseBuilder->build($response);
@@ -174,9 +186,17 @@ class DishController
                 ]),
                 'alias' => new Required([
                     new Length(['min' => 1, 'max' => 100]),
-                    //unique
+                    $this->uniqueConstraintFactory->create([
+                        'table' => 'dishes',
+                        'column' => 'alias',
+                        'existsID' => $data['id'],
+                    ]),
                 ]),
-                //quality_id exists
+                'quality_id' => new Required([
+                    $this->existsConstraintFactory->create([
+                        'table' => 'qualities',
+                    ]),
+                ]),
             ],
             'allowExtraFields' => true,
         ]), $this->responseBuilder)) return $this->responseBuilder->build($response);

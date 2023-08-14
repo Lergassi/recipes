@@ -2,11 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Factories\ExistsConstraintFactory;
 use App\Factories\RecipeFactory;
 use App\Services\DataManager;
 use App\Services\RecipeService;
 use App\Services\ResponseBuilder;
-use App\Services\Validator;
+use App\Services\Validation\Validator;
+use PDO;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\Validator\Constraints\Collection;
@@ -16,20 +18,22 @@ use Symfony\Component\Validator\Constraints\Required;
 
 class RecipeController
 {
-    private \PDO $pdo;
+    private PDO $pdo;
     private RecipeFactory $recipeFactory;
     private Validator $validator;
     private ResponseBuilder $responseBuilder;
     private DataManager $dataManager;
     private RecipeService $recipeService;
+    private ExistsConstraintFactory $existsConstraintFactory;
 
     public function __construct(
-        \PDO             $pdo,
-        ResponseBuilder  $responseBuilder,
-        Validator $validator,
-        DataManager      $dataManager,
-        RecipeFactory    $recipeFactory,
-        RecipeService    $recipeService,
+        PDO                    $pdo,
+        ResponseBuilder         $responseBuilder,
+        Validator               $validator,
+        DataManager             $dataManager,
+        RecipeFactory           $recipeFactory,
+        RecipeService           $recipeService,
+        ExistsConstraintFactory $existsConstraintFactory,
     )
     {
         $this->pdo = $pdo;
@@ -38,6 +42,7 @@ class RecipeController
         $this->dataManager = $dataManager;
         $this->recipeFactory = $recipeFactory;
         $this->recipeService = $recipeService;
+        $this->existsConstraintFactory = $existsConstraintFactory;
     }
 
     public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -62,6 +67,20 @@ class RecipeController
             'name' => $requestData['name'],
             'dish_version_id' => intval($requestData['dish_version_id']),
         ];
+
+        if ($this->validator->validate($data, new Collection([
+            'fields' => [
+                'name' => new Required([
+                    new Length(['min' => 1, 'max' => 256]),
+                ]),
+                'dish_version_id' => new Required([
+                    $this->existsConstraintFactory->create([
+                        'table' => 'dish_versions',
+                    ]),
+                ]),
+            ],
+            'allowExtraFields' => true,
+        ]), $this->responseBuilder)) return $this->responseBuilder->build($response);
 
         $recipeID = $this->recipeFactory->create($data['name'], $data['dish_version_id']);
 
@@ -251,6 +270,7 @@ class RecipeController
                 ->build($response);
         }
 
+        //todo: Конструктор?
         $recipePositions = $this->dataManager->findRecipePositions($data['id']);
         if (!count($recipePositions)) {
             return $this->responseBuilder
@@ -258,7 +278,7 @@ class RecipeController
                 ->build($response);
         }
 
-        //todo: Проверка наличия изменений для коммита.
+        //todo: Проверка наличия изменений для коммита. Если изменений нет - коммит не делать.
 
         $this->pdo->beginTransaction();
 
@@ -299,7 +319,6 @@ class RecipeController
                 'name' => new Required([
                     new Length(['min' => 1, 'max' => 64]),
                 ]),
-                //alias unique
             ],
             'allowExtraFields' => true,
         ]), $this->responseBuilder)) return $this->responseBuilder->build($response);

@@ -2,10 +2,11 @@
 
 namespace App\Controllers;
 
-use App\Services\AliasGenerator;
+use App\Factories\UniqueConstraintFactory;
 use App\Services\DataManager;
 use App\Services\ResponseBuilder;
-use App\Services\Validator;
+use App\Services\Validation\Validator;
+use PDO;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\Validator\Constraints\Collection;
@@ -15,22 +16,25 @@ use Symfony\Component\Validator\Constraints\Required;
 
 class QualityController
 {
-    private \PDO $pdo;
+    private PDO $pdo;
     private DataManager $dataManager;
     private ResponseBuilder $responseBuilder;
     private Validator $validator;
+    private UniqueConstraintFactory $uniqueConstraintFactory;
 
     public function __construct(
-        \PDO            $pdo,
-        ResponseBuilder $responseBuilder,
-        DataManager     $dataManager,
-        Validator       $validator,
+        PDO                    $pdo,
+        ResponseBuilder         $responseBuilder,
+        DataManager             $dataManager,
+        Validator               $validator,
+        UniqueConstraintFactory $uniqueConstraintFactory,
     )
     {
         $this->pdo = $pdo;
         $this->responseBuilder = $responseBuilder;
         $this->dataManager = $dataManager;
         $this->validator = $validator;
+        $this->uniqueConstraintFactory = $uniqueConstraintFactory;
     }
 
     public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -67,7 +71,10 @@ class QualityController
                 ]),
                 'alias' => new Required([
                     new Length(['min' => 1, 'max' => 100]),
-                    //unique
+                    $this->uniqueConstraintFactory->create([
+                        'table' => 'qualities',
+                        'column' => 'alias',
+                    ]),
                 ]),
             ],
             'allowExtraFields' => true,
@@ -157,8 +164,12 @@ class QualityController
                 ]),
                 'alias' => new Required([
                     new Length(['min' => 1, 'max' => 100]),
+                    $this->uniqueConstraintFactory->create([
+                        'table' => 'qualities',
+                        'column' => 'alias',
+                        'existsID' => $data['id'],
+                    ]),
                 ]),
-                //alias unique
             ],
             'allowExtraFields' => true,
         ]), $this->responseBuilder)) return $this->responseBuilder->build($response);

@@ -2,31 +2,38 @@
 
 namespace App\Controllers;
 
+use App\Factories\ExistsConstraintFactory;
 use App\Factories\RecipeFactory;
-use App\Services\AliasGenerator;
+use App\Factories\UniqueConstraintFactory;
 use App\Services\DataManager;
 use App\Services\ResponseBuilder;
-use App\Services\Validator;
+use App\Services\Validation\Validator;
+use PDO;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\Validator\Constraints\Collection;
+use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Required;
 
 class DishVersionController
 {
-    private \PDO $pdo;
+    private PDO $pdo;
     private RecipeFactory $recipeFactory;
     private Validator $validator;
     private ResponseBuilder $responseBuilder;
     private DataManager $dataManager;
+    private UniqueConstraintFactory $uniqueConstraintFactory;
+    private ExistsConstraintFactory $existsConstraintFactory;
 
     public function __construct(
-        \PDO            $pdo,
-        RecipeFactory   $recipeFactory,
-        Validator       $validator,
-        ResponseBuilder $responseBuilder,
-        DataManager     $dataManager,
+        PDO                     $pdo,
+        RecipeFactory           $recipeFactory,
+        Validator               $validator,
+        ResponseBuilder         $responseBuilder,
+        DataManager             $dataManager,
+        UniqueConstraintFactory $uniqueConstraintFactory,
+        ExistsConstraintFactory $existsConstraintFactory,
     )
     {
         $this->pdo = $pdo;
@@ -34,6 +41,8 @@ class DishVersionController
         $this->validator = $validator;
         $this->recipeFactory = $recipeFactory;
         $this->dataManager = $dataManager;
+        $this->uniqueConstraintFactory = $uniqueConstraintFactory;
+        $this->existsConstraintFactory = $existsConstraintFactory;
     }
 
     public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -67,6 +76,32 @@ class DishVersionController
             'dish_id' => intval($requestData['dish_id']),
             'quality_id' => intval($requestData['quality_id']),
         ];
+
+        if ($this->validator->validate($data, new Collection([
+            'fields' => [
+                'name' => new Required([
+                    new Length(['min' => 1, 'max' => 128]),
+                ]),
+                'alias' => new Required([
+                    new Length(['min' => 1, 'max' => 150]),
+                    $this->uniqueConstraintFactory->create([
+                        'table' => 'dish_versions',
+                        'column' => 'alias',
+                    ]),
+                ]),
+                'dish_id' => new Required([
+                    $this->existsConstraintFactory->create([
+                        'table' => 'dishes',
+                    ]),
+                ]),
+                'quality_id' => new Required([
+                    $this->existsConstraintFactory->create([
+                        'table' => 'qualities',
+                    ]),
+                ]),
+            ],
+            'allowExtraFields' => true,
+        ]), $this->responseBuilder)) return $this->responseBuilder->build($response);
 
         $this->pdo->beginTransaction();
 
@@ -187,6 +222,27 @@ class DishVersionController
             'alias' => $requestData['alias'],
             'quality_id' => intval($requestData['quality_id']),
         ];
+
+        if ($this->validator->validate($data, new Collection([
+            'fields' => [
+                'name' => new Required([
+                    new Length(['min' => 1, 'max' => 128]),
+                ]),
+                'alias' => new Required([
+                    new Length(['min' => 1, 'max' => 150]),
+                    $this->uniqueConstraintFactory->create([
+                        'table' => 'dish_versions',
+                        'column' => 'alias',
+                    ]),
+                ]),
+                'quality_id' => new Required([
+                    $this->existsConstraintFactory->create([
+                        'table' => 'qualities',
+                    ]),
+                ]),
+            ],
+            'allowExtraFields' => true,
+        ]), $this->responseBuilder)) return $this->responseBuilder->build($response);
 
         $query = 'update dish_versions set name = :name, alias = :alias, quality_id = :quality_id where id = :id';
 

@@ -15,6 +15,8 @@ export default function EditReferenceProductForm(props: EditQualityFormProps) {
     const [alias, setAlias] = useState('');
     const [sort, setSort] = useState(0);
 
+    const [originalName, setOriginalName] = useState('');
+
     useEffect(() => {
         props.api.request('/reference_product/get?' + new URLSearchParams({
             id: String(props.ID),
@@ -25,6 +27,8 @@ export default function EditReferenceProductForm(props: EditQualityFormProps) {
             setName(response.name);
             setAlias(response.alias);
             setSort(response.sort);
+
+            setOriginalName(response.name);
         });
     }, [props.ID]);
 
@@ -59,7 +63,7 @@ export default function EditReferenceProductForm(props: EditQualityFormProps) {
 
     return (
         <div>
-            <h3>Edit reference product {name} ({ID})</h3>
+            <h3>Edit reference product {originalName} ({ID})</h3>
             <form action="">
                 <div className={'input-group'}>
                     <span className={'input-group__label'}>name: </span>

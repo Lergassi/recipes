@@ -2,10 +2,11 @@
 
 namespace App\Controllers;
 
-use App\Services\AliasGenerator;
+use App\Factories\UniqueConstraintFactory;
 use App\Services\DataManager;
 use App\Services\ResponseBuilder;
-use App\Services\Validator;
+use App\Services\Validation\Validator;
+use PDO;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\Validator\Constraints\Collection;
@@ -15,25 +16,25 @@ use Symfony\Component\Validator\Constraints\Required;
 
 class ReferenceProductController
 {
-    private \PDO $pdo;
+    private PDO $pdo;
     private DataManager $dataManager;
     private ResponseBuilder $responseBuilder;
     private Validator $validator;
-    private AliasGenerator $aliasGenerator;
+    private UniqueConstraintFactory $uniqueConstraintFactory;
 
     public function __construct(
-        \PDO             $pdo,
-        ResponseBuilder  $responseBuilder,
-        Validator $validator,
-        DataManager      $dataManager,
-        AliasGenerator   $aliasGenerator,
+        PDO                     $pdo,
+        ResponseBuilder         $responseBuilder,
+        Validator               $validator,
+        DataManager             $dataManager,
+        UniqueConstraintFactory $uniqueConstraintFactory,
     )
     {
         $this->pdo = $pdo;
         $this->responseBuilder = $responseBuilder;
         $this->validator = $validator;
         $this->dataManager = $dataManager;
-        $this->aliasGenerator = $aliasGenerator;
+        $this->uniqueConstraintFactory = $uniqueConstraintFactory;
     }
 
     public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -70,7 +71,10 @@ class ReferenceProductController
                 ]),
                 'alias' => new Required([
                     new Length(['min' => 1, 'max' => 100]),
-                    //unique
+                    $this->uniqueConstraintFactory->create([
+                        'table' => 'qualities',
+                        'column' => 'alias',
+                    ]),
                 ]),
             ],
             'allowExtraFields' => true,
@@ -160,7 +164,11 @@ class ReferenceProductController
                 ]),
                 'alias' => new Required([
                     new Length(['min' => 1, 'max' => 100]),
-                    //unique
+                    $this->uniqueConstraintFactory->create([
+                        'table' => 'qualities',
+                        'column' => 'alias',
+                        'existsID' => $data['id'],
+                    ]),
                 ]),
             ],
             'allowExtraFields' => true,
