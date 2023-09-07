@@ -21,13 +21,11 @@ use Symfony\Component\Validator\Constraints\Required;
 class DishController
 {
     #[Inject] private PDO $pdo;
-    #[Inject] private DataManager $dataManager;
-    #[Inject] private DishVersionManager $dishVersionManager;
+    #[Inject] private DishManager $dishManager;
     #[Inject] private UniqueConstraintFactory $uniqueConstraintFactory;
     #[Inject] private ExistsConstraintFactory $existsConstraintFactory;
     #[Inject] private ResponseBuilder $responseBuilder;
     #[Inject] private Validator $validator;
-    #[Inject] private DishManager $dishManager;
 
     public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
@@ -92,20 +90,6 @@ class DishController
         return $this->responseBuilder->build($response);
     }
 
-    public function all(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
-    {
-        $dishes = $this->dishManager->find();
-
-        foreach ($dishes as &$dish) {
-            $dishVersions = $this->dishVersionManager->findByDish($dish['id']);
-            $dish['versions'] = $dishVersions;  //todo: Убрать.
-        }
-
-        $this->responseBuilder->set($dishes);
-
-        return $this->responseBuilder->build($response);
-    }
-
     public function get(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
@@ -126,14 +110,16 @@ class DishController
             ->addError('Блюдо не найдено.')
             ->build($response);
 
-        //todo: Формат возвращаемых данных должен быть определен. Не понятно где какие данные.
-        /*
-         * Если делать versions, то до какого уровня? Например продукты должны быть уже в рецепте, но тут это лишнее. Пусть внизу
-         * */
-//        $dishVersions = $this->dataManager->findDishVersions($dish['id']);
-//        $dish['versions'] = $dishVersions;
-
         $this->responseBuilder->set($dish);
+
+        return $this->responseBuilder->build($response);
+    }
+
+    public function all(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $dishes = $this->dishManager->find();
+
+        $this->responseBuilder->set($dishes);
 
         return $this->responseBuilder->build($response);
     }

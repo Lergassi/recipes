@@ -6,6 +6,7 @@ use App\DataManager\DishManager;
 use App\DataManager\QualityManager;
 use App\DataManager\ReferenceProductManager;
 use App\Service\DataManager;
+use App\Test\Foo;
 use DI\Attribute\Inject;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -22,8 +23,9 @@ class DataManagerSandbox extends AbstractSandboxController
     {
 //        $this->exists();
 //        $this->findHead();
-        $this->separateDataManager();
+//        $this->separateDataManager();
 //        $this->buildArray();
+        $this->apiBuild_getStarted();
 
         return $response;
     }
@@ -61,5 +63,36 @@ class DataManagerSandbox extends AbstractSandboxController
 //        dump($this->dishManager->findOne(1));
 //        dump($this->dishManager->findOne(42));
 //        dump($this->dishManager->find());
+    }
+
+    private function apiBuild_getStarted()
+    {
+        $dish = $this->dishManager->findOne(1);
+
+        $dish['quality'] = $this->qualityManager->findOne($dish['quality_id']);
+        unset($dish['quality_id']);
+
+        dump($dish);
+        dump($this->dishRelationBuilder->buildOne($this->dishManager->findOne(1)));
+
+        $dishesData = $this->dishManager->find();
+        $dishes = [];
+        $count = count($dishesData);
+        for ($i = 0; $i < $count; $i++) {
+            $dishes[$i] = $dishesData[$i];
+            $dishes[$i]['quality'] = $this->qualityManager->findOne($dishes[$i]['quality_id']);
+            unset($dishes[$i]['quality_id']);
+        }
+        dump($dishesData);
+        dump($dishes);
+
+        dump($this->dishRelationBuilder->build($this->dishManager->find()));
+
+//        $a = [1,2,3,4,5, new Foo(42)];
+//        $b = $a;
+//        unset($a[2]);
+//        unset($a[5]);
+//        dump($a);
+//        dump($b);
     }
 }

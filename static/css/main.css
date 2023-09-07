@@ -73,7 +73,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .item-list__item:not(:last-child) {
-    border-bottom: 1px solid #a1a1a1;
+    /*border-bottom: 1px solid #a1a1a1;*/
+    border-bottom: 2px solid #a1a1a1;
 }
 
 .item-list__item:hover {
@@ -81,12 +82,12 @@ h1, h2, h3, h4, h5, h6 {
     cursor: pointer;
 }
 
-.item-list__item_poor {
-    border-bottom: 2px solid #9d9d9d !important;
-}
+/*.item-list__item_poor {*/
+/*    border-bottom: 2px solid #9d9d9d !important;*/
+/*}*/
 
 .item-list__item_common {
-    border-bottom: 2px solid black !important;
+    /*border-bottom: 2px solid black !important;*/
 }
 
 .item-list__item_uncommon {

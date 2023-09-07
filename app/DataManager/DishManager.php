@@ -7,6 +7,7 @@ use DI\Attribute\Inject;
 class DishManager
 {
     #[Inject] private \PDO $pdo;
+    #[Inject] private QualityManager $qualityManager;
 
     public function findOne(int $ID): ?array
     {
@@ -17,7 +18,10 @@ class DishManager
 
         $stmt->execute();
 
-        return $stmt->fetch() ?: null;
+        $item = $stmt->fetch();
+        if (!$item) return null;
+
+        return $this->build($item);
     }
 
     //todo: Возможно сортировку можно указывать отдельно.
@@ -28,6 +32,20 @@ class DishManager
 
         $stmt->execute();
 
-        return $stmt->fetchAll();
+        $items = $stmt->fetchAll();
+        foreach ($items as &$item) {
+            $item = $this->build($item);
+        }
+
+        return $items;
+    }
+
+    private function build(array $data): array
+    {
+        //todo: Возможно это нужно убрать на уровень формирования ответа для api. Внутри программы всё равно нет единой логики. Особенно в коммитах и RecipePosition. Но пока тут.
+        $data['quality'] = $this->qualityManager->findOne($data['quality_id']);
+        unset($data['quality_id']);
+
+        return $data;
     }
 }

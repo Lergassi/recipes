@@ -77,6 +77,75 @@ class RecipeController
         return $this->responseBuilder->build($response);
     }
 
+    public function get(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $requestData = $request->getQueryParams();
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
+
+        $data = [
+            'id' => intval($requestData['id']),
+        ];
+
+        $recipe = $this->recipeManager->findOne($data['id']);
+        if (!$recipe) return $this->responseBuilder
+            ->addError('Рецепт не найден.')
+            ->build($response);
+
+        //todo: Запросы на получение данных для api можно сделать отдельно.
+        $recipePositions = $this->recipePositionManager->findByRecipe($recipe['id']);
+        $recipe['products'] = [];
+        foreach ($recipePositions as $recipePosition) {
+            $recipe['products'][] = [
+                'reference_product' => [
+                    'id' => $recipePosition['reference_product_id'],
+                    'name' => $recipePosition['reference_product_name'],
+                ],
+                'weight' => $recipePosition['weight'],
+            ];
+        }
+        $recipe['head_commit_id'] = $this->commitManager->findOneHead($recipe['id'])['id'] ?? null;
+
+        $this->responseBuilder->set($recipe);
+
+        return $this->responseBuilder->build($response);
+    }
+
+    public function all(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $requestData = $request->getQueryParams();
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'dish_version_id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
+
+        $data = [
+            'dish_version_id' => intval($requestData['dish_version_id']),
+        ];
+
+        $recipes = $this->recipeManager->findByDishVersion($data['dish_version_id']);
+
+        $this->responseBuilder->set($recipes);
+
+        return $this->responseBuilder->build($response);
+    }
+
     public function addProduct(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
@@ -157,75 +226,6 @@ class RecipeController
         return $this->responseBuilder->build($response);
     }
 
-    public function all(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
-    {
-        $requestData = $request->getQueryParams();
-        if ($this->validator->validate($requestData, [
-            new Collection([
-                'fields' => [
-                    'dish_version_id' => new Required([
-                        new NotBlank(['allowNull' => false]),
-                    ]),
-                ],
-                'allowExtraFields' => true,
-            ]),
-        ], $this->responseBuilder)) return $this->responseBuilder
-            ->build($response);
-
-        $data = [
-            'dish_version_id' => intval($requestData['dish_version_id']),
-        ];
-
-        $recipes = $this->recipeManager->findByDishVersion($data['dish_version_id']);
-
-        $this->responseBuilder->set($recipes);
-
-        return $this->responseBuilder->build($response);
-    }
-
-    public function get(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
-    {
-        $requestData = $request->getQueryParams();
-        if ($this->validator->validate($requestData, [
-            new Collection([
-                'fields' => [
-                    'id' => new Required([
-                        new NotBlank(['allowNull' => false]),
-                    ]),
-                ],
-                'allowExtraFields' => true,
-            ]),
-        ], $this->responseBuilder)) return $this->responseBuilder
-            ->build($response);
-
-        $data = [
-            'id' => intval($requestData['id']),
-        ];
-
-        $recipe = $this->recipeManager->findOne($data['id']);
-        if (!$recipe) return $this->responseBuilder
-            ->addError('Рецепт не найден.')
-            ->build($response);
-
-        //todo: Запросы на получение данных для api можно сделать отдельно.
-        $recipePositions = $this->recipePositionManager->findByRecipe($recipe['id']);
-        $recipe['products'] = [];
-        foreach ($recipePositions as $recipePosition) {
-            $recipe['products'][] = [
-                'reference_product' => [
-                    'id' => $recipePosition['reference_product_id'],
-                    'name' => $recipePosition['reference_product_name'],
-                ],
-                'weight' => $recipePosition['weight'],
-            ];
-        }
-        $recipe['head_commit_id'] = $this->commitManager->findHeadRecipeCommit($recipe['id'])['id'] ?? null;
-
-        $this->responseBuilder->set($recipe);
-
-        return $this->responseBuilder->build($response);
-    }
-
     public function commit(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
@@ -251,6 +251,7 @@ class RecipeController
             ->build($response);
 
         //todo: Конструктор?
+        //todo: @oop recipe->isFree(): bool
         $recipePositions = $this->recipePositionManager->findByRecipe($data['id']);
         if (!count($recipePositions)) return $this->responseBuilder
             ->addError('Рецепт пустой.')
@@ -260,7 +261,7 @@ class RecipeController
 
         $this->pdo->beginTransaction();
 
-        $previousRecipeCommit = $this->commitManager->findOnePreviousRecipeCommit($recipe['id']);
+        $previousRecipeCommit = $this->commitManager->findOnePrevious($recipe['id']);
 
         $recipeCommitID = $this->recipeService->commit($recipe['id'], $previousRecipeCommit['id'] ?? null);
 
@@ -306,7 +307,7 @@ class RecipeController
             ->addError('Рецепт не найден.')
             ->build($response);
 
-        $head = $this->commitManager->findHeadRecipeCommit($recipe['id']);
+        $head = $this->commitManager->findOneHead($recipe['id']);
         if (!$head) return $this->responseBuilder
             ->addError('Нельзя создать ветку. В рецепте нет ни одного зафиксированного изменения.')
             ->build($response);
@@ -319,8 +320,10 @@ class RecipeController
 
         $newRecipeID = $this->recipeFactory->create($data['name'], $recipe['dish_version_id']);
 
+        //todo: @oop Копирование всех позиций. Скрыть позиции за классом. Убрать/не делать сущность RecipePosition.
         $recipePositions = $this->recipePositionManager->findByRecipe($recipe['id']);
         foreach ($recipePositions as $recipePosition) {
+
             $this->recipeService->addProduct($newRecipeID, $recipePosition['reference_product_id'], $recipePosition['weight']);
         }
 

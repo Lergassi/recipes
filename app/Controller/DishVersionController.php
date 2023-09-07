@@ -115,42 +115,13 @@ class DishVersionController
         return $this->responseBuilder->build($response);
     }
 
-    public function all(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
-    {
-        $requestData = $request->getQueryParams();
-        if ($this->validator->validate($requestData, [
-            new Collection([
-                'fields' => [
-                    'dish_id' => new Required([
-                        new NotBlank(['allowNull' => false]),
-                    ]),
-                ],
-                'allowExtraFields' => true,
-            ]),
-        ], $this->responseBuilder)) return $this->responseBuilder
-            ->build($response);
-
-        //todo: Совместить с get логикой.
-        $dishVersions = $this->dishVersionManager->findByDish(intval($requestData['dish_id']));
-//        foreach ($dishVersions as &$dishVersion) {
-//            $dishVersion['recipes'] = $this->dataManager->findRecipes($dishVersion['id']);
-//            foreach ($dishVersion['recipes'] as &$recipe) {
-//                $recipe['head_commit_id'] = $this->dataManager->findHeadRecipeCommit($recipe['id'])['id'] ?? null;
-//            }
-//        }
-
-        $this->responseBuilder->set($dishVersions);
-
-        return $this->responseBuilder->build($response);
-    }
-
     public function get(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
         if ($this->validator->validate($requestData, [
             new Collection([
                 'fields' => [
-                    'dish_id' => new Required([
+                    'id' => new Required([
                         new NotBlank(['allowNull' => false]),
                     ]),
                 ],
@@ -167,13 +138,29 @@ class DishVersionController
             ->addError('Версия блюда не найдена.')
             ->build($response);
 
-        //todo: Убрать.
-        $dishVersion['recipes'] = $this->recipeManager->findByDishVersion($dishVersion['id']);
-        foreach ($dishVersion['recipes'] as &$recipe) {
-            $recipe['head_commit_id'] = $this->commitManager->findHeadRecipeCommit($recipe['id'])['id'] ?? null;
-        }
-
         $this->responseBuilder->set($dishVersion);
+
+        return $this->responseBuilder->build($response);
+    }
+
+    public function all(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $requestData = $request->getQueryParams();
+        if ($this->validator->validate($requestData, [
+            new Collection([
+                'fields' => [
+                    'dish_id' => new Required([
+                        new NotBlank(['allowNull' => false]),
+                    ]),
+                ],
+                'allowExtraFields' => true,
+            ]),
+        ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
+
+        $dishVersions = $this->dishVersionManager->findByDish(intval($requestData['dish_id']));
+
+        $this->responseBuilder->set($dishVersions);
 
         return $this->responseBuilder->build($response);
     }
@@ -219,6 +206,7 @@ class DishVersionController
                     $this->uniqueConstraintFactory->create([
                         'table' => 'dish_versions',
                         'column' => 'alias',
+                        'existsID' => $data['id'],
                     ]),
                 ]),
                 'quality_id' => new Required([

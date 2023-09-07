@@ -15,6 +15,7 @@ class RecipeService
     #[Inject] private \PDO $pdo;
     #[Inject] private RecipeFactory $recipeFactory;
 
+    //todo: Заменить recipeID на recipe.
     public function addProduct(int $recipeID, int $referenceProductID, int $weight): int {
         if ($weight <= 0) return 0;
 
@@ -124,6 +125,12 @@ class RecipeService
         return 0;
     }
 
+    /*
+     * Алгоритм:
+     *  Создать коммит.
+     *  Скопировать все позиции в созданный коммит.
+     *  Обновить head у рецепта.
+     * */
     public function commit(int $recipeID, int $previousRecipeCommitID = null)
     {
         $insertRecipeCommitQuery = 'insert into recipe_commits (recipe_id, previous_commit_id) VALUES (:recipe_id, :previous_commit_id)';
@@ -154,7 +161,7 @@ class RecipeService
 
     private function updateHead(int $recipeID, int $recipeCommitID): void
     {
-        $head = $this->commitManager->findHeadRecipeCommit($recipeID);
+        $head = $this->commitManager->findOneHead($recipeID);
         if (!$head) {
             $insertHeadQuery = 'insert into heads (recipe_id, recipe_commit_id) values (:recipe_id, :recipe_commit_id)';
             $insertHeadStmt = $this->pdo->prepare($insertHeadQuery);

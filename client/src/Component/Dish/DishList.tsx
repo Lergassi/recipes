@@ -79,7 +79,7 @@ export default function DishList(props: DishListProps) {
                     - Отдельным запросом без ID в ключах.
                     * */
                     return (
-                        <div className={'item-list__item ' + (selectedDishID === value.id ? 'item-list__item_selected' : '')} onClick={selectHandler.bind(this, value.id)} key={index}>
+                        <div className={'item-list__item ' + 'item-list__item_' + value.quality.alias + (selectedDishID === value.id ? ' item-list__item_selected' : '')} onClick={selectHandler.bind(this, value.id)} key={index}>
                             <span className={'item-list__item-text'}>{value.name}</span>
                             <span className={'item-list__edit-button'} onClick={showEditFormHandler.bind(this, value.id)}></span>
                         </div>

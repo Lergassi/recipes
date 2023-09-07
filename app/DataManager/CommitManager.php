@@ -9,7 +9,7 @@ class CommitManager
     #[Inject] private \PDO $pdo;
 
     //todo: Наверное можно оставить только head. Если head нету - значит рецепт новый. Иначе head всегда указывает на последний коммит.
-    public function findOnePreviousRecipeCommit(int $recipeID): ?array
+    public function findOnePrevious(int $recipeID): ?array
     {
         $query = 'select rc.* from recipe_commits rc right join heads h on rc.id = h.recipe_commit_id where h.recipe_id = :recipe_id';
         $stmt = $this->pdo->prepare($query);
@@ -21,9 +21,9 @@ class CommitManager
         return $stmt->fetch() ?: null;
     }
 
-    public function findHeadRecipeCommit(int $recipeID): ?array
+    public function findOneHead(int $recipeID): ?array
     {
-        return $this->findOnePreviousRecipeCommit($recipeID);
+        return $this->findOnePrevious($recipeID);
     }
 
     public function findCommitRecipePositions(int $recipeCommitID): array

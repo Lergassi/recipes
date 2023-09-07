@@ -27,7 +27,7 @@ export default function EditDishForm(props: EditDishFormProps) {
             setID(response.id);
             setName(response.name);
             setAlias(response.alias);
-            setQualityID(response.quality_id);
+            setQualityID(response.quality.id);
 
             setOriginalName(response.name);
         });

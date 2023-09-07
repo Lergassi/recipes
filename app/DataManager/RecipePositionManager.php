@@ -9,6 +9,7 @@ class RecipePositionManager
     #[Inject] private \PDO $pdo;
 
     //todo: Конструктор. Перенести в рецепт. Или отдельный объект обертка для таких запросов.
+    //todo: Возможно не нужно раньше времени оптимизировать и просто получать сразу все позиции.
     public function findOneByProduct(int $recipeID, int $productID): ?array
     {
         $existsRecipePositionQuery = 'select rp.* from recipe_positions rp where rp.recipe_id = :recipe_id and rp.reference_product_id = :reference_product_id';

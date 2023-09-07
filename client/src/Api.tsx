@@ -5,6 +5,7 @@ export default class Api {
         this.host = host;
     }
 
+    //todo: Generic response.
     request(path: string, callback: (response: any) => void) {
         fetch(this.host + path)
             .then((value) => {

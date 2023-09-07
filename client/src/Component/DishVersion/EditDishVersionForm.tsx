@@ -20,10 +20,10 @@ export default function EditDishVersionForm(props: EditDishFormProps) {
     useEffect(() => {
         props.api.request('/dish_version/get?' + new URLSearchParams({
             id: String(props.ID),
-        }), response => {
+        }), response => {   //todo: type
             setName(response.name);
             setAlias(response.alias);
-            setQualityID(response.quality_id);
+            setQualityID(response.quality.id);
 
             setOriginalName(response.name);
         });

@@ -4,6 +4,7 @@ import EditDishVersionForm from './EditDishVersionForm.js';
 import CreateDishVersionForm from './CreateDishVersionForm.js';
 import CreateDishForm from '../Dish/CreateDishForm.js';
 import _, {values} from 'lodash';
+import {DishVersionApiInterface} from '../../Interface/DishVersionApiInterface.js';
 
 interface DishVersionListProps {
     api: Api;
@@ -12,7 +13,7 @@ interface DishVersionListProps {
 }
 
 export default function DishVersionList(props: DishVersionListProps) {
-    const [dishVersions, setDishVersions] = useState([]);
+    const [dishVersions, setDishVersions] = useState<DishVersionApiInterface[]>([]);
     const [selectedDishVersionID, setSelectedDishVersionID] = useState<number|null>(null);
 
     const [createFormVisible, setCreateFormVisible] = useState(false);
@@ -92,7 +93,7 @@ export default function DishVersionList(props: DishVersionListProps) {
                 <div className={'item-list simple-block'}>
                     {dishVersions.map((value, index, array) => {
                         return (
-                            <div className={'item-list__item ' + (selectedDishVersionID === value.id ? 'item-list__item_selected' : '')} onClick={selectHandler.bind(this, value.id)} key={index}>
+                            <div className={'item-list__item ' + 'item-list__item_' + value.quality.alias + (selectedDishVersionID === value.id ? ' item-list__item_selected' : '')} onClick={selectHandler.bind(this, value.id)} key={index}>
                                 <span className={'item-list__item-text'}>{value.name}</span>
                                 <span className={'item-list__edit-button'} onClick={showEditFormHandler.bind(this, value.id)}></span>
                             </div>
