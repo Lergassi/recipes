@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\DataService;
 
 use App\DataManager\CommitManager;
 use App\DataManager\RecipePositionManager;
 use App\Factory\RecipeFactory;
+use App\Service\DataManager;
 use DI\Attribute\Inject;
 
 class RecipeService

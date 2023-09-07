@@ -8,7 +8,7 @@ use App\DataManager\RecipePositionManager;
 use App\Factory\ExistsConstraintFactory;
 use App\Factory\RecipeFactory;
 use App\Service\DataManager;
-use App\Service\RecipeService;
+use App\Service\DataService\RecipeService;
 use App\Service\ResponseBuilder;
 use App\Service\Validation\Validator;
 use DI\Attribute\Inject;

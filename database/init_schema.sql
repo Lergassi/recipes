@@ -1,3 +1,29 @@
+create table users
+(
+    id int unsigned auto_increment,
+    email varchar(128) not null,
+    password_hash varchar(64) not null,
+    api_key varchar(128) null,
+    primary key (id),
+    unique index email (email),
+    unique index api_key (api_key)
+);
+
+create table if not exists user_groups
+(
+    id varchar(32) not null,
+    primary key (id)
+);
+
+create table if not exists users_has_groups
+(
+    user_id int unsigned not null,
+    user_group_id varchar(32) not null,
+    foreign key (user_id) references users (id),
+    foreign key (user_group_id) references user_groups (id),
+    unique (user_id, user_group_id)
+);
+
 create table if not exists qualities
 (
     id int unsigned auto_increment,

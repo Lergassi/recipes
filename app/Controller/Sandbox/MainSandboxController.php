@@ -2,14 +2,19 @@
 
 namespace App\Controller\Sandbox;
 
+use App\DataManager\UserManager;
 use App\Factory\ExistsConstraintFactory;
 use App\Factory\UniqueConstraintFactory;
 use App\Service\AliasGenerator;
+use App\Service\ApiKeyGenerator;
+use App\Service\ApiSecurity;
 use App\Service\Validation\Validator;
 use Behat\Transliterator\Transliterator;
+use DI\Attribute\Inject;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -32,7 +37,9 @@ class MainSandboxController
 //        $this->_devRequestQueryParams($request);
 //        $this->_devAliasGenerator($request);
 //        $this->validationBySymfony($request);
-        $this->devUniqueConstraint($request);
+//        $this->devUniqueConstraint($request);
+//        $this->devApiKeyAuth();
+        $this->authByApiKey();
 
         return $response;
     }
@@ -186,5 +193,33 @@ class MainSandboxController
 ////                'value' => 'common',
 //            ]),
         ]));
+    }
+
+    #[Inject] private ApiSecurity $security;
+    #[Inject] private ApiKeyGenerator $apiKeyGenerator;
+    #[Inject] private UserManager $userManager;
+
+    private function devApiKeyAuth()
+    {
+        $user = $this->userManager->findOneByEmailEntity('user01@site.ru');
+
+        $apiKey = $this->security->login($user);
+        dump($apiKey);
+        dump($this->security);
+//        dump(random_bytes(256));
+//        dump($this->apiKeyGenerator->generate());
+//        dump(Uuid::uuid4());
+    }
+
+    private function authByApiKey()
+    {
+        $apiKey = '8bb5fc75-ee69-40b9-bca0-4a31c46acd07';
+//        $apiKey = '';
+//        $apiKey = 42;
+
+        $user = $this->userManager->findOneEntityByApiKey($apiKey);
+        dump($user);
+
+        $this->security->login($user);
     }
 }

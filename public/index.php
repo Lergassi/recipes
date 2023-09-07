@@ -14,13 +14,21 @@ use App\Controller\Sandbox\ApiSandboxController;
 use App\Controller\Sandbox\DatabaseSandboxController;
 use App\Controller\Sandbox\DataManagerSandbox;
 use App\Controller\Sandbox\MainSandboxController;
+use App\Controller\Sandbox\MiddlewareSandboxController;
 use App\Controller\Sandbox\ValidationSandboxController;
+use App\Controller\Security\AuthController;
+use App\Controller\Security\RegisterController;
 use App\Controller\Test\MainTestController;
 use App\Debug\InitCustomDumper;
+use App\Middleware\OnlyAuthMiddleware;
+use App\Middleware\TryLoginByApiKeyMiddleware;
+use App\Service\ResponseBuilder;
 use App\Service\Validation\UniqueConstraint;
 use DI\ContainerBuilder;
 use Dotenv\Dotenv;
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Log\LoggerInterface;
 use Slim\Factory\AppFactory;
 use function DI\autowire;
 use function DI\get;
@@ -57,13 +65,35 @@ $app = AppFactory::createFromContainer($container);
 //todo Только для dev.
 $container->set('app', $app);
 
+$customErrorHandler = function (
+    ServerRequestInterface $request,
+    Throwable $exception,
+    bool $displayErrorDetails,
+    bool $logErrors,
+    bool $logErrorDetails,
+    ?LoggerInterface $logger = null
+) use ($app, $container) {
+    if ($logger) $logger->error($exception->getMessage());
+
+    $responseBuilder = $container->get(ResponseBuilder::class);
+    $responseBuilder->addError($exception->getMessage());
+
+    $response = $app->getResponseFactory()->createResponse();
+
+    return $responseBuilder->build($response);
+};
+
 //todo: Только для dev.
-$app->addErrorMiddleware(true, false, false);
+$errorMiddleware = $app->addErrorMiddleware(true, false, false);
+$errorMiddleware->setDefaultErrorHandler($customErrorHandler);
 
 //----------------------------------------------------------------
 // main routes
 //----------------------------------------------------------------
 $app->get('/', [MainController::class, 'homepage']);
+
+$app->get('/register', [RegisterController::class, 'register']);
+$app->get('/generate_api_key', [AuthController::class, 'generateApiKey']);
 
 $app->get('/quality/create', [QualityController::class, 'create']);
 $app->get('/qualities', [QualityController::class, 'all']);
@@ -105,6 +135,10 @@ $app->get('/sandbox/db', [DatabaseSandboxController::class, 'run']);
 $app->get('/sandbox/data_manager', [DataManagerSandbox::class, 'run']);
 $app->get('/sandbox/api', [ApiSandboxController::class, 'run']);
 $app->get('/sandbox/validation', [ValidationSandboxController::class, 'run']);
+$app->get('/sandbox/middleware/login', [MiddlewareSandboxController::class, 'loginByApiKey'])
+    ->addMiddleware($container->get(OnlyAuthMiddleware::class))
+    ->addMiddleware($container->get(TryLoginByApiKeyMiddleware::class))
+;
 
 //----------------------------------------------------------------
 // test routes

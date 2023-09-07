@@ -2,9 +2,11 @@
 
 namespace App\Service;
 
-//todo: Пока 1 файл на все таблицы.
 use DI\Attribute\Inject;
 
+/**
+ * @deprecated
+ */
 class DataManager
 {
     #[Inject] private \PDO $pdo;
