@@ -4,20 +4,20 @@ ini_set('error_reporting', E_ALL);
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 
-use App\Controllers\DishController;
-use App\Controllers\DishVersionController;
-use App\Controllers\MainController;
-use App\Controllers\QualityController;
-use App\Controllers\RecipeController;
-use App\Controllers\ReferenceProductController;
-use App\Controllers\SandboxControllers\ApiSandboxController;
-use App\Controllers\SandboxControllers\DatabaseSandboxController;
-use App\Controllers\SandboxControllers\DataManagerSandbox;
-use App\Controllers\SandboxControllers\MainSandboxController;
-use App\Controllers\SandboxControllers\ValidationSandboxController;
-use App\Controllers\TestControllers\MainTestController;
+use App\Controller\DishController;
+use App\Controller\DishVersionController;
+use App\Controller\MainController;
+use App\Controller\QualityController;
+use App\Controller\RecipeController;
+use App\Controller\ReferenceProductController;
+use App\Controller\Sandbox\ApiSandboxController;
+use App\Controller\Sandbox\DatabaseSandboxController;
+use App\Controller\Sandbox\DataManagerSandbox;
+use App\Controller\Sandbox\MainSandboxController;
+use App\Controller\Sandbox\ValidationSandboxController;
+use App\Controller\Test\MainTestController;
 use App\Debug\InitCustomDumper;
-use App\Services\Validation\UniqueConstraint;
+use App\Service\Validation\UniqueConstraint;
 use DI\ContainerBuilder;
 use Dotenv\Dotenv;
 use Psr\Container\ContainerInterface;
@@ -33,6 +33,7 @@ $dotenv = Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
 $containerBuilder = new ContainerBuilder();
+$containerBuilder->useAttributes(true);
 $containerBuilder->addDefinitions([
     PDO::class => function (ContainerInterface $container) {
         return new PDO(
@@ -43,6 +44,7 @@ $containerBuilder->addDefinitions([
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
 //                \PDO::ATTR_EMULATE_PREPARES => false,
                 PDO::ATTR_STRINGIFY_FETCHES => false,
+                PDO::ERRMODE_EXCEPTION => true,
             ]
         );
     },

@@ -67,14 +67,42 @@ h1, h2, h3, h4, h5, h6 {
     border: 1px solid #a1a1a1;
 }
 
+.item-list__item {
+    padding-right: 50px;
+    position: relative;
+}
+
 .item-list__item:not(:last-child) {
     border-bottom: 1px solid #a1a1a1;
 }
 
-.item-list__item {
-    /*padding: 6px 10px;*/
-    padding-right: 50px;
-    position: relative;
+.item-list__item:hover {
+    background-color: #f8eded;
+    cursor: pointer;
+}
+
+.item-list__item_poor {
+    border-bottom: 2px solid #9d9d9d !important;
+}
+
+.item-list__item_common {
+    border-bottom: 2px solid black !important;
+}
+
+.item-list__item_uncommon {
+    border-bottom: 2px solid #1eff00 !important;
+}
+
+.item-list__item_rare {
+    border-bottom: 2px solid #0070dd !important;
+}
+
+.item-list__item_epic {
+    border-bottom: 2px solid #a335ee !important;
+}
+
+.item-list__item_legendary {
+    border-bottom: 2px solid #ff8000 !important;
 }
 
 .item-list__item-text {
@@ -84,11 +112,6 @@ h1, h2, h3, h4, h5, h6 {
 
 .item-list__item_selected {
     background-color: #e3dada;
-}
-
-.item-list__item:hover {
-    background-color: #f8eded;
-    cursor: pointer;
 }
 
 .item-list__edit-button {
@@ -153,6 +176,85 @@ h1, h2, h3, h4, h5, h6 {
     display: inline-block;
 }
 
+/* todo: Сделать отдельной библоитекой. */
+/*--------------------------------*/
+/* quality                        */
+/*--------------------------------*/
+.quality-poor-bg-color {
+    background: #9d9d9d;
+}
+
+.quality-common-bg-color {
+    background: #ffffff;
+}
+
+.quality-uncommon-bg-color {
+    background: #1eff00;
+}
+
+.quality-rare-bg-color {
+    background: #0070dd;
+}
+
+.quality-epic-bg-color {
+    background: #a335ee;
+}
+
+.quality-legendary-bg-color {
+    background: #ff8000;
+}
+
+/*----*/
+.quality-poor-color {
+    color: #9d9d9d;
+}
+
+.quality-common-color {
+    /*color: #ffffff;*/
+    color: black;
+}
+
+.quality-uncommon-color {
+    color: #1eff00;
+}
+
+.quality-rare-color {
+    color: #0070dd;
+}
+
+.quality-epic-color {
+    color: #a335ee;
+}
+
+.quality-legendary-color {
+    color: #ff8000;
+}
+
+/*----*/
+.quality-poor-underline {
+    border-bottom: 2px solid #9d9d9d;
+}
+
+.quality-common-underline {
+    border-bottom: 2px solid black;
+}
+
+.quality-uncommon-underline {
+    border-bottom: 2px solid #1eff00;
+}
+
+.quality-rare-underline {
+    border-bottom: 2px solid #0070dd;
+}
+
+.quality-epic-underline {
+    border-bottom: 2px solid #a335ee;
+}
+
+.quality-legendary-underline {
+    border-bottom: 2px solid #ff8000;
+}
+
 /*--------------------------------*/
 /* dev                            */
 /*--------------------------------*/
@@ -163,3 +265,15 @@ h1, h2, h3, h4, h5, h6 {
 /*.item-list__edit-button:after {*/
 /*    content: 'E';*/
 /*}*/
+
+.block_01 {
+    background: orange;
+}
+
+.block_02 {
+    background: red;
+}
+
+.block_03 {
+
+}
