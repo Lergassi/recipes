@@ -25,7 +25,7 @@ class RecipePositionManager
 
     public function findByRecipe(int $recipeID): ?array
     {
-        $query = 'select rp.*, r.id as recipe_id, rfp.name as reference_product_name from recipe_positions rp left join recipes r on rp.recipe_id = r.id left join reference_products rfp on rp.reference_product_id = rfp.id where rp.recipe_id = :recipe_id order by rfp.sort';
+        $query = 'select rp.*, r.id as recipe_id, rfp.name as reference_product_name from recipe_positions rp left join recipes r on rp.recipe_id = r.id left join reference_products rfp on rp.reference_product_id = rfp.id where rp.recipe_id = :recipe_id order by rfp.name';
         $stmt = $this->pdo->prepare($query);
 
         $stmt->bindValue(':recipe_id', $recipeID);
