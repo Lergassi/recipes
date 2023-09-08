@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\DataManager\DishManager;
 use App\DataManager\DishVersionManager;
+use App\DataManager\QualityManager;
+use App\Exception\AppException;
 use App\Factory\ExistsConstraintFactory;
 use App\Factory\UniqueConstraintFactory;
 use App\Service\DataManager;
@@ -26,6 +28,8 @@ class DishController
     #[Inject] private ExistsConstraintFactory $existsConstraintFactory;
     #[Inject] private ResponseBuilder $responseBuilder;
     #[Inject] private Validator $validator;
+
+    #[Inject] private QualityManager $qualityManager;
 
     public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
@@ -110,6 +114,11 @@ class DishController
             ->addError('Блюдо не найдено.')
             ->build($response);
 
+        $dish['quality'] = $this->qualityManager->findOne($dish['quality_id']);
+        unset($dish['quality_id']);
+
+//        if (!$dish->isAuthor($this->security->getUser())) throw AppException::accessDenied();
+
         $this->responseBuilder->set($dish);
 
         return $this->responseBuilder->build($response);
@@ -118,6 +127,12 @@ class DishController
     public function all(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $dishes = $this->dishManager->find();
+        //todo: Времено вынесено из manager.
+        //todo: Возможно это нужно убрать на уровень формирования ответа для api. Внутри программы всё равно нет единой логики. Особенно в коммитах и RecipePosition. Но пока тут.
+        foreach ($dishes as &$dish) {
+            $dish['quality'] = $this->qualityManager->findOne($dish['quality_id']);
+            unset($dish['quality_id']);
+        }
 
         $this->responseBuilder->set($dishes);
 

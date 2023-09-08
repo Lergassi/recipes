@@ -3,10 +3,10 @@
 namespace App\Controller\Security;
 
 use App\DataManager\UserManager;
+use App\DataService\UserService;
 use App\Factory\UserFactory;
 use App\Service\ApiKeyGenerator;
 use App\Service\ApiSecurity;
-use App\Service\DataService\UserService;
 use App\Service\ResponseBuilder;
 use App\Service\Security;
 use App\Type\UserGroupID;

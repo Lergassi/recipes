@@ -37,7 +37,6 @@ class User
         return $user;
     }
 
-    //todo: Проверка не пустой $password. Отдельной задачей.
     public function verifyPassword(string $password)
     {
         Validator::notBlank()->assert($password);

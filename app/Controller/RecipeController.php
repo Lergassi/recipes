@@ -3,12 +3,15 @@
 namespace App\Controller;
 
 use App\DataManager\CommitManager;
+use App\DataManager\DishVersionManager;
 use App\DataManager\RecipeManager;
 use App\DataManager\RecipePositionManager;
+use App\DataService\DishVersionService;
+use App\DataService\RecipeService;
+use App\Exception\AppException;
 use App\Factory\ExistsConstraintFactory;
 use App\Factory\RecipeFactory;
 use App\Service\DataManager;
-use App\Service\DataService\RecipeService;
 use App\Service\ResponseBuilder;
 use App\Service\Validation\Validator;
 use DI\Attribute\Inject;
@@ -32,6 +35,8 @@ class RecipeController
     #[Inject] private CommitManager $commitManager;
     #[Inject] private RecipeService $recipeService;
     #[Inject] private ExistsConstraintFactory $existsConstraintFactory;
+    #[Inject] private DishVersionManager $dishVersionManager;
+    #[Inject] private DishVersionService $dishVersionService;
 
     public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
@@ -51,6 +56,9 @@ class RecipeController
         ], $this->responseBuilder)) return $this->responseBuilder
             ->build($response);
 
+        $dishVersion = $this->dishVersionManager->findOne(intval($requestData['dish_version_id']));
+        if (!$dishVersion) throw AppException::entityNotFound();
+
         $data = [
             'name' => $requestData['name'],
             'dish_version_id' => intval($requestData['dish_version_id']),
@@ -69,6 +77,8 @@ class RecipeController
             ],
             'allowExtraFields' => true,
         ]), $this->responseBuilder)) return $this->responseBuilder->build($response);
+
+        $this->dishVersionService->addRecipe($dishVersion, $data['name']);
 
         $recipeID = $this->recipeFactory->create($data['name'], $data['dish_version_id']);
 
@@ -140,6 +150,7 @@ class RecipeController
         ];
 
         $recipes = $this->recipeManager->findByDishVersion($data['dish_version_id']);
+        //Без products. Можно метод без детализации назвать по другому или сделать опцию.
 
         $this->responseBuilder->set($recipes);
 

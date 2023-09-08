@@ -3,8 +3,8 @@
 namespace App\Factory;
 
 use App\DataManager\UserManager;
+use App\DataService\UserService;
 use App\Entity\User;
-use App\Service\DataService\UserService;
 use DI\Attribute\Inject;
 use PDO;
 use Respect\Validation\Validator;

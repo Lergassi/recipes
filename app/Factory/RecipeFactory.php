@@ -4,6 +4,9 @@ namespace App\Factory;
 
 use App\Service\DataManager;
 
+/**
+ * @deprecated Использовать инструмент(объект) для добавления рецепта прямо в версию.
+ */
 class RecipeFactory
 {
     private \PDO $pdo;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\DataService;
+namespace App\DataService;
 
 use App\Entity\User;
 use DI\Attribute\Inject;

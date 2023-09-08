@@ -7,7 +7,6 @@ use DI\Attribute\Inject;
 class DishVersionManager
 {
     #[Inject] private \PDO $pdo;
-    #[Inject] private QualityManager $qualityManager;
 
     public function findOne(int $ID): ?array
     {
@@ -18,10 +17,7 @@ class DishVersionManager
 
         $stmt->execute();
 
-        $item = $stmt->fetch();
-        if (!$item) return null;
-
-        return $this->build($item);
+        return $stmt->fetch() ?: null;
     }
 
     public function findByDish(int $dishID): array
@@ -33,19 +29,6 @@ class DishVersionManager
 
         $stmt->execute();
 
-        $items = $stmt->fetchAll();
-        foreach ($items as &$item) {
-            $item = $this->build($item);
-        }
-
-        return $items;
-    }
-
-    private function build(array $data): array
-    {
-        $data['quality'] = $this->qualityManager->findOne($data['quality_id']);
-        unset($data['quality_id']);
-
-        return $data;
+        return $stmt->fetchAll();
     }
 }

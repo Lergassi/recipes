@@ -105,7 +105,7 @@ $app->get('/dish_version/get', [DishVersionController::class, 'get']);
 $app->get('/dish_version/update', [DishVersionController::class, 'update']);
 $app->get('/dish_version/delete', [DishVersionController::class, 'delete']);
 
-$app->get('/recipe/create', [RecipeController::class, 'create']);
+$app->get('/recipe/create', [RecipeController::class, 'create']);   //todo: Нет ui.
 $app->get('/recipes', [RecipeController::class, 'all']);
 $app->get('/recipe/get', [RecipeController::class, 'get']);
 $app->get('/recipe/add_product', [RecipeController::class, 'addProduct']);

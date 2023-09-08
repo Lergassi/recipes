@@ -2,9 +2,8 @@
 
 namespace App\Command\Admin;
 
-use App\DataManager\UserGroupManager;
 use App\DataManager\UserManager;
-use App\Service\DataService\UserService;
+use App\DataService\UserService;
 use App\Type\CommandID;
 use DI\Attribute\Inject;
 use Respect\Validation\Validator;

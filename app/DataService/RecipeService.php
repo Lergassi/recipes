@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\DataService;
+namespace App\DataService;
 
 use App\DataManager\CommitManager;
 use App\DataManager\RecipePositionManager;
@@ -10,10 +10,9 @@ use DI\Attribute\Inject;
 
 class RecipeService
 {
-    #[Inject] private DataManager $dataManager;
+    #[Inject] private \PDO $pdo;
     #[Inject] private RecipePositionManager $recipePositionManager;
     #[Inject] private CommitManager $commitManager;
-    #[Inject] private \PDO $pdo;
     #[Inject] private RecipeFactory $recipeFactory;
 
     //todo: Заменить recipeID на recipe.
@@ -81,42 +80,6 @@ class RecipeService
         
         return $removedWeight;
     }
-
-    //todo: Вариант для поиска решения проверок и возвращения ошибок.
-//    public function branch(int $recipeID, string $name): int
-//    {
-//        $recipe = $this->dataManager->findOneRecipe($recipeID);
-//        if (!$recipe) throw new \Exception('Рецепт не найден.');
-//
-//        $head = $this->dataManager->findHeadRecipeCommit($recipeID);
-//        if (!$head) throw new \Exception('Нельзя скопировать рецепт без коммита.');
-//
-//        if ($this->dataManager->hasDiffWithCurrentRecipe($recipeID)) throw new \Exception('Нельзя создать рецепт. Текущий рецепт имеет незафиксированные изменения.');
-//
-//        $newRecipeID = $this->recipeFactory->create($name, $recipe['dish_version_id']);
-//
-//        $recipePositions = $this->dataManager->findRecipePositions($recipeID);
-//        foreach ($recipePositions as $recipePosition) {
-//            $this->addProduct($newRecipeID, $recipePosition['reference_product_id'], $recipePosition['weight']);
-//        }
-//
-//        $this->updateHead($newRecipeID, $head['id']);
-//
-//        return $newRecipeID;
-//    }
-
-//    public function copy(int $recipeID, string $name): int
-//    {
-//        $recipe = $this->dataManager->findOneRecipe($recipeID);
-//        $newRecipeID = $this->recipeFactory->create($name, $recipe['dish_version_id']);
-//
-//        $recipePositions = $this->dataManager->findRecipePositions($recipe['id']);
-//        foreach ($recipePositions as $recipePosition) {
-//            $this->addProduct($newRecipeID, $recipePosition['reference_product_id'], $recipePosition['weight']);
-//        }
-//
-//        $this->commit($newRecipeID);
-//    }
 
     public function createRecipeCommitPosition(): int
     {

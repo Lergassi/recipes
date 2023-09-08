@@ -3,8 +3,13 @@
 namespace App\Controller;
 
 use App\DataManager\CommitManager;
+use App\DataManager\DishManager;
 use App\DataManager\DishVersionManager;
+use App\DataManager\QualityManager;
 use App\DataManager\RecipeManager;
+use App\DataService\DishService;
+use App\DataService\DishVersionService;
+use App\Exception\AppException;
 use App\Factory\ExistsConstraintFactory;
 use App\Factory\RecipeFactory;
 use App\Factory\UniqueConstraintFactory;
@@ -22,6 +27,7 @@ use Symfony\Component\Validator\Constraints\Required;
 
 class DishVersionController
 {
+    //todo: Возможно слишком много зависимостей.
     #[Inject] private PDO $pdo;
     #[Inject] private RecipeFactory $recipeFactory;
     #[Inject] private Validator $validator;
@@ -32,13 +38,17 @@ class DishVersionController
     #[Inject] private CommitManager $commitManager;
     #[Inject] private UniqueConstraintFactory $uniqueConstraintFactory;
     #[Inject] private ExistsConstraintFactory $existsConstraintFactory;
+    #[Inject] private DishManager $dishManager;
+    #[Inject] private DishService $dishService;
+    #[Inject] private DishVersionService $dishVersionService;
+    #[Inject] private QualityManager $qualityManager;
 
     public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $requestData = $request->getQueryParams();
         if ($this->validator->validate($requestData, [
             //todo: Возможно стоит сделать отдельный валидатор для простого наличия всех полей.
-            new Collection([
+            new Collection([    //todo: Возможно стоит оборачивать стороние решения в классы, как минимум для пометки устаревшего кода. Валидация симфони заменена на respect/validation. А также (или) для единого решения в случае замены инструмента.
                 'fields' => [
                     'name' => new Required([
                         new NotBlank(['allowNull' => false]),
@@ -58,6 +68,7 @@ class DishVersionController
         ], $this->responseBuilder)) return $this->responseBuilder
             ->build($response);
 
+        //todo: Сделать отдельный объект для работы с данными от клиента.
         $data = [
             'name' => $requestData['name'],
             'alias' => $requestData['alias'],
@@ -65,52 +76,23 @@ class DishVersionController
             'quality_id' => intval($requestData['quality_id']),
         ];
 
-        if ($this->validator->validate($data, new Collection([
-            'fields' => [
-                'name' => new Required([
-                    new Length(['min' => 1, 'max' => 128]),
-                ]),
-                'alias' => new Required([
-                    new Length(['min' => 1, 'max' => 150]),
-                    $this->uniqueConstraintFactory->create([
-                        'table' => 'dish_versions',
-                        'column' => 'alias',
-                    ]),
-                ]),
-                'dish_id' => new Required([
-                    $this->existsConstraintFactory->create([
-                        'table' => 'dishes',
-                    ]),
-                ]),
-                'quality_id' => new Required([
-                    $this->existsConstraintFactory->create([
-                        'table' => 'qualities',
-                    ]),
-                ]),
-            ],
-            'allowExtraFields' => true,
-        ]), $this->responseBuilder)) return $this->responseBuilder->build($response);
+        $dish = $this->dishManager->findOne($data['dish_id']);
+        if (!$dish) throw AppException::entityNotFound();
+
+        $quality = $this->qualityManager->findOne($data['quality_id']);
+        if (!$quality) throw AppException::entityNotFound();
+
+        //todo: access
 
         $this->pdo->beginTransaction();
 
-        $query = 'insert into dish_versions (name, alias, dish_id, quality_id) values (:name, :alias, :dish_id, :quality_id)';
-
-        $stmt = $this->pdo->prepare($query);
-
-        $stmt->bindValue(':name', $data['name']);
-        $stmt->bindValue(':alias', $data['alias']);
-        $stmt->bindValue(':dish_id', $data['dish_id']);
-        $stmt->bindValue(':quality_id', $data['quality_id']);
-
-        $stmt->execute();
-
-        $dishVersionID = $this->pdo->lastInsertId();
-
-        $this->recipeFactory->create('Оригинальный', $dishVersionID);
+        //todo: Надо придумать алгоритм создания service на основе данных отдельно от manager.
+        $dishVersion = $this->dishService->addDishVersion($dish, $data['name'], $data['alias'], $quality);
+        $this->dishVersionService->addRecipe($dishVersion,'Оригинальный');
 
         $this->pdo->commit();
 
-        $this->responseBuilder->set($dishVersionID);
+        $this->responseBuilder->set($dishVersion['id']);
 
         return $this->responseBuilder->build($response);
     }
@@ -138,6 +120,9 @@ class DishVersionController
             ->addError('Версия блюда не найдена.')
             ->build($response);
 
+        $dishVersion['quality'] = $this->qualityManager->findOne($dishVersion['quality_id']);
+        unset($dishVersion['quality_id']);
+
         $this->responseBuilder->set($dishVersion);
 
         return $this->responseBuilder->build($response);
@@ -159,6 +144,10 @@ class DishVersionController
             ->build($response);
 
         $dishVersions = $this->dishVersionManager->findByDish(intval($requestData['dish_id']));
+        foreach ($dishVersions as &$dishVersion) {
+            $dishVersion['quality'] = $this->qualityManager->findOne($dishVersion['quality_id']);
+            unset($dishVersion['quality_id']);
+        }
 
         $this->responseBuilder->set($dishVersions);
 
@@ -188,6 +177,9 @@ class DishVersionController
             ]),
         ], $this->responseBuilder)) return $this->responseBuilder
             ->build($response);
+
+        $dishVersion = $this->dishManager->findOne(intval($requestData['id']));
+        if (!$dishVersion) throw AppException::entityNotFound();
 
         $data = [
             'id' => intval($requestData['id']),
@@ -253,6 +245,7 @@ class DishVersionController
         $ID = intval($request->getQueryParams()['id']);
 
         //todo: validate data
+        //todo: access
         //todo: удаление рецептов и коммитов
 
         $query = 'delete from dish_versions where id = :id';
