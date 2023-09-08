@@ -42,21 +42,7 @@ $dotenv->load();
 
 $containerBuilder = new ContainerBuilder();
 $containerBuilder->useAttributes(true);
-$containerBuilder->addDefinitions([
-    PDO::class => function (ContainerInterface $container) {
-        return new PDO(
-            sprintf('mysql:host=%s;dbname=%s', $_ENV['APP_DB_HOST'] ?? '', $_ENV['APP_DB_NAME'] ?? ''),
-            $_ENV['APP_DB_USER'] ?? '',
-            $_ENV['APP_DB_PASSWORD'] ?? '',
-            [
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_STRINGIFY_FETCHES => false,
-                PDO::ERRMODE_EXCEPTION => true,
-            ]
-        );
-    },
-    UniqueConstraint::class => autowire()->property('pdo', get(PDO::class))
-]);
+$containerBuilder->addDefinitions(__DIR__ . '/../app/container.php');
 
 $container = $containerBuilder->build();
 

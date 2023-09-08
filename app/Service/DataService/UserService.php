@@ -2,16 +2,12 @@
 
 namespace App\Service\DataService;
 
-use App\DataManager\UserGroupManager;
-use App\DataManager\UserManager;
 use App\Entity\User;
 use DI\Attribute\Inject;
 
 class UserService
 {
     #[Inject] private \PDO $pdo;
-    #[Inject] private UserManager $userManager;
-    #[Inject] private UserGroupManager $userGroupManager;
 
     //todo: Считается, что пользователь и группа уже есть в системе. Можно добавить настройку, которая будет включать/отключать проверку или сделать отдельным классом. Или отдельный метод init без проверок.
     public function addUserGroups(User $user, array $userGroupIDs): void
