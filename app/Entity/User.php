@@ -2,9 +2,12 @@
 
 namespace App\Entity;
 
+use App\Interface\SerializeInterface;
+use App\Service\SerializeReader;
 use Respect\Validation\Validator;
 
-class User
+//class User implements SerializeInterface
+class User implements \JsonSerializable
 {
     private int $id;
     private string $email;
@@ -89,6 +92,20 @@ class User
     public function resetApiKey(): void
     {
         $this->apiKey = null;
+    }
+
+//    public function serialize(SerializeReader $reader): void
+//    {
+//        $reader->add('user_groups', $this->userGroups);
+//    }
+
+    // todo: Временное решение для настройки Quality/ReferenceProduct для ui.
+    public function jsonSerialize(): mixed
+    {
+        return [
+            'email' => $this->email,
+            'user_groups' => $this->userGroups,
+        ];
     }
 
     private function __construct() {}

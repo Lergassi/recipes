@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use DI\Attribute\Inject;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Psr7\Headers;
@@ -13,13 +14,12 @@ class ResponseBuilder
     private mixed $content;
     private array $errors;
 
-    private Serializer $serializer;
+    #[Inject] private Serializer $serializer;
 
-    public function __construct(Serializer $serializer)
+    public function __construct()
     {
         $this->content = '';
         $this->errors = [];
-        $this->serializer = $serializer;
     }
 
     public function set(mixed $content): ResponseBuilder

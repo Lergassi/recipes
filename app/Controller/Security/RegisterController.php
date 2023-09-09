@@ -19,7 +19,6 @@ class RegisterController
 {
     #[Inject] private \PDO $pdo;
     #[Inject] private UserFactory $userFactory;
-    #[Inject] private UserManager $userManager;
     #[Inject] private UserService $userService;
     #[Inject] private ResponseBuilder $responseBuilder;
     #[Inject] private ApiKeyGenerator $apiKeyGenerator;
@@ -29,9 +28,9 @@ class RegisterController
     {
         $requestData = $request->getQueryParams();
         Validator::keySet(
-            Validator::key('email', Validator::notBlank()),
+            Validator::key('email', Validator::notBlank()), //todo: В модуле должен быть выбор: почта и/или логин.
             Validator::key('password', Validator::notBlank()),
-//            Validator::key('password_repeat', Validator::equals($requestData['password'])),   //Работало же... Или нет?
+//            Validator::key('api_key', null, false),
         )->assert($requestData);
 
         $this->pdo->beginTransaction();

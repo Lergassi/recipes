@@ -4,6 +4,7 @@ ini_set('error_reporting', E_ALL);
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 
+use App\Controller\UserController;
 use App\Controller\DishController;
 use App\Controller\DishVersionController;
 use App\Controller\MainController;
@@ -27,7 +28,6 @@ use App\Middleware\TryLoginByApiKeyMiddleware;
 use App\Service\ResponseBuilder;
 use DI\ContainerBuilder;
 use Dotenv\Dotenv;
-use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 use Slim\Factory\AppFactory;
@@ -80,6 +80,13 @@ $app->get('/', [MainController::class, 'homepage']);
 
 $app->get('/register', [RegisterController::class, 'register']);
 $app->get('/generate_api_key', [AuthController::class, 'generateApiKey']);
+
+$app->group('', function (RouteCollectorProxyInterface $group) {
+    $group->get('/user', [UserController::class, 'info']);
+})
+    ->addMiddleware($container->get(OnlyAuthMiddleware::class))
+    ->addMiddleware($container->get(TryLoginByApiKeyMiddleware::class))
+;
 
 $app->group('', function (RouteCollectorProxyInterface $group) {
     $group->get('/quality/create', [QualityController::class, 'create']);

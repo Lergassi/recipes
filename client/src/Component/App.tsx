@@ -5,15 +5,11 @@ import Api from '../Api.js';
 import {useState} from 'react';
 import {EntityID} from '../Type/EntityID.js';
 
-const params = {
-    host: 'http://dev.api.recipes.sd44.ru',
-};
+interface AppProps {
+    api: Api;
+}
 
-let api = new Api(
-    params.host,
-);
-
-export default function App() {
+export default function App(props: AppProps) {
     const [appDataSelectedID, setAppDataSelectedID] = useState('');
 
     function appDataSelectHandler(key: string, event): void {
@@ -23,7 +19,7 @@ export default function App() {
     return (
         <div>
             <RecipeManager
-                api={api}
+                api={props.api}
             />
             <div className={'component-group'}>
                 <div className={'component-wrapper app-data-list'}>
@@ -39,10 +35,10 @@ export default function App() {
                 </div>
                 <div className={'component-wrapper'}>
                     {appDataSelectedID === EntityID.Quality && <Quality
-                        api={api}
+                        api={props.api}
                     />}
                     {appDataSelectedID === EntityID.ReferenceProduct && <ReferenceProduct
-                        api={api}
+                        api={props.api}
                     />}
                 </div>
             </div>
