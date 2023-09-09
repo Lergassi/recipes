@@ -2,8 +2,10 @@ import Quality from './Quality/Quality.js';
 import ReferenceProduct from './ReferenceProduct/ReferenceProduct.js';
 import RecipeManager from './RecipeManager.js';
 import Api from '../Api.js';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {EntityID} from '../Type/EntityID.js';
+import AuthComponent from './Security/AuthComponent.js';
+import {setCookie} from '../cookie.js';
 
 interface AppProps {
     api: Api;
@@ -11,10 +13,22 @@ interface AppProps {
 
 export default function App(props: AppProps) {
     const [appDataSelectedID, setAppDataSelectedID] = useState('');
+    const [apiKey, setApiKey] = useState(props.api.apiKey);   //todo: Надо помечать както подобные "очень временные решения".
 
     function appDataSelectHandler(key: string, event): void {
         setAppDataSelectedID(key);
     }
+
+    if (!apiKey) return (
+        <AuthComponent
+            api={props.api}
+            setApiKeyHandler={(apiKey) => {
+                setApiKey(apiKey);
+                props.api.apiKey = apiKey;
+                setCookie('api_key', apiKey);
+            }}
+        />
+    );
 
     return (
         <div>

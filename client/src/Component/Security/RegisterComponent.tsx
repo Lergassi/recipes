@@ -1,8 +1,10 @@
 import {useState} from 'react';
-import Api from '../Api.js';
+import Api from '../../Api.js';
+import {setCookie} from '../../cookie.js';
 
 interface RegisterComponentProps {
     api: Api;
+    setApiKeyHandler: (apiKey: string) => void;
 }
 
 export default function RegisterComponent(props: RegisterComponentProps) {
@@ -32,25 +34,25 @@ export default function RegisterComponent(props: RegisterComponentProps) {
             email: email,
             password: password,
         }, (response) => {
-
+            props.setApiKeyHandler(response);
         });
     }
 
     return (
         <div className={'simple-block'}>
             <h3>Register</h3>
-            <form action="">
+            <form action=".">
                 <div className={'input-group'}>
                     <span className={'input-group__label'}>email: </span>
                     <input className={'app-input'} type="text" onChange={emailChangeHandler}/>
                 </div>
                 <div className={'input-group'}>
                     <span className={'input-group__label'}>password: </span>
-                    <input className={'app-input'} type="text" onChange={passwordChangeHandler}/>
+                    <input className={'app-input'} type="password" onChange={passwordChangeHandler}/>
                 </div>
                 <div className={'input-group'}>
                     <span className={'input-group__label'}>password (repeat): </span>
-                    <input className={'app-input'} type="text" onChange={passwordRepeatChangeHandler}/>
+                    <input className={'app-input'} type="password" onChange={passwordRepeatChangeHandler}/>
                 </div>
                 <div className={'input-group'}>
                     <input className={'btn'} type="submit" value={'Регистрация'} onClick={registerHandler}/>

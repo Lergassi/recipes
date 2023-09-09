@@ -1,12 +1,25 @@
 export default class Api {
     private host: string;
+    private _apiKey: string;    //todo: Нужно переделать в состояние для изменения при получении. hook?
 
     constructor(host: string) {
         this.host = host;
     }
 
+    get apiKey(): string {
+        return this._apiKey;
+    }
+
+    set apiKey(value: string) {
+        this._apiKey = value;
+    }
+
     //todo: Generic response.
     request(path: string, params: any, callback: (response: any) => void) {
+        if (this._apiKey) {
+            params['api_key'] = this._apiKey;
+        }
+
         let url = this.host + path + '?' + new URLSearchParams(params);
         fetch(url)
             .then((value) => {

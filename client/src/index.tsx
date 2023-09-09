@@ -1,31 +1,23 @@
 import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from './Component/App.js';
-import RegisterComponent from './Component/RegisterComponent.js';
 import Api from './Api.js';
-
-const params = {
-    host: 'http://dev.api.recipes.sd44.ru',
-};
+import {getCookie} from './cookie.js';
 
 let api = new Api(
-    params.host,
+    process.env.APP_API_URL,
 );
+
+//todo: Переделать в хуки.
+let apiKey = getCookie('api_key');
+if (apiKey) {
+    api.apiKey = apiKey;
+}
 
 const root = createRoot(document.getElementById("root"));
 
 root.render(
     <StrictMode>
-        {/*
-        проверка аутентификации
-            запрос на сервер с ключом из куки
-        если нет
-            форма регистрации и входа
-        иначе основные компоненты
-        */}
-        <RegisterComponent
-            api={api}
-        />
         <App
             api={api}
         />

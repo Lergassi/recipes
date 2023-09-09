@@ -7,6 +7,8 @@
 # back
 .env
 
+/data
+
 # front
 /node_modules
 /client/dist

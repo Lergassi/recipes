@@ -1,4 +1,9 @@
 const path = require('path');
+const { DefinePlugin } = require('webpack');
+
+require('dotenv').config({
+    path: path.resolve(__dirname, 'client/.env'),
+});
 
 module.exports = {
     mode: 'development',
@@ -13,7 +18,9 @@ module.exports = {
         libraryTarget: 'amd',
     },
     plugins: [
-
+        new DefinePlugin({
+            'process.env.APP_API_URL': JSON.stringify(process.env.APP_API_URL),
+        })
     ],
     module: {
         rules: [
