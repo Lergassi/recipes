@@ -22,7 +22,7 @@ export default function Quality(props: QualityProps) {
     }, []);
 
     function fetchItems() {
-        props.api.request('/qualities', (response) => {
+        props.api.request('/qualities', {}, (response) => {
             setQualities(response);
         });
     }
@@ -30,9 +30,9 @@ export default function Quality(props: QualityProps) {
     function deleteHandle(ID: number, event) {
         event.preventDefault();
 
-        props.api.request('/quality/delete?' + new URLSearchParams({
+        props.api.request('/quality/delete', {
             id: String(ID),
-        }), (response) => {
+        }, (response) => {
             if (Number(response) === 1) {
                 let newQualities = [...qualities];
                 _.remove(newQualities, (value, index, collection) => {

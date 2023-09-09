@@ -17,7 +17,7 @@ export default function ReferenceProductWeightSelector(props: ReferenceProductWe
     const [weight, setWeight] = useState<number|null>(null);
 
     useEffect(() => {
-        props.api.request('/reference_products', response => {
+        props.api.request('/reference_products', {}, response => {
             setReferenceProducts(response);
         });
     }, []);

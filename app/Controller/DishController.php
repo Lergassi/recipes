@@ -8,7 +8,7 @@ use App\DataManager\QualityManager;
 use App\Exception\AppException;
 use App\Factory\ExistsConstraintFactory;
 use App\Factory\UniqueConstraintFactory;
-use App\Service\DataManager;
+use App\Service\ApiSecurity;
 use App\Service\ResponseBuilder;
 use App\Service\Validation\Validator;
 use DI\Attribute\Inject;
@@ -28,8 +28,8 @@ class DishController
     #[Inject] private ExistsConstraintFactory $existsConstraintFactory;
     #[Inject] private ResponseBuilder $responseBuilder;
     #[Inject] private Validator $validator;
-
     #[Inject] private QualityManager $qualityManager;
+    #[Inject] private ApiSecurity $security;    //todo: SecurityInterface
 
     public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
@@ -79,13 +79,14 @@ class DishController
             'allowExtraFields' => true,
         ]), $this->responseBuilder)) return $this->responseBuilder->build($response);
 
-        $query = 'insert into dishes (name, alias, quality_id) values (:name, :alias, :quality_id)';
+        $query = 'insert into dishes (name, alias, quality_id, author_id) values (:name, :alias, :quality_id, :author_id)';
 
         $stmt = $this->pdo->prepare($query);
 
         $stmt->bindValue(':name', $data['name']);
         $stmt->bindValue(':alias', $data['alias']);
         $stmt->bindValue(':quality_id', $data['quality_id']);
+        $stmt->bindValue(':author_id', $this->security->getUser()->getID());
 
         $stmt->execute();
 
@@ -109,15 +110,12 @@ class DishController
         ], $this->responseBuilder)) return $this->responseBuilder
             ->build($response);
 
-        $dish = $this->dishManager->findOne(intval($requestData['id']));
+        $dish = $this->dishManager->findOneByUser(intval($requestData['id']), $this->security->getUser());  //todo: Возможно механизм должен быть без getByUser при запросе одной записи, а с проверкой прав доступа после запроса.
         if (!$dish) return $this->responseBuilder
             ->addError('Блюдо не найдено.')
             ->build($response);
 
-        $dish['quality'] = $this->qualityManager->findOne($dish['quality_id']);
-        unset($dish['quality_id']);
-
-//        if (!$dish->isAuthor($this->security->getUser())) throw AppException::accessDenied();
+        $dish = $this->buildDish($dish);
 
         $this->responseBuilder->set($dish);
 
@@ -126,12 +124,12 @@ class DishController
 
     public function all(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $dishes = $this->dishManager->find();
+        $dishes = $this->dishManager->findByUser($this->security->getUser());
         //todo: Времено вынесено из manager.
         //todo: Возможно это нужно убрать на уровень формирования ответа для api. Внутри программы всё равно нет единой логики. Особенно в коммитах и RecipePosition. Но пока тут.
+        //todo: SerializeInterface + strategy?
         foreach ($dishes as &$dish) {
-            $dish['quality'] = $this->qualityManager->findOne($dish['quality_id']);
-            unset($dish['quality_id']);
+            $dish = $this->buildDish($dish);
         }
 
         $this->responseBuilder->set($dishes);
@@ -161,6 +159,11 @@ class DishController
                 'allowExtraFields' => true,
             ]),
         ], $this->responseBuilder)) return $this->responseBuilder
+            ->build($response);
+
+        $dish = $this->dishManager->findOneByUser(intval($requestData['id']), $this->security->getUser());
+        if (!$dish) return $this->responseBuilder
+            ->addError('Блюдо не найдено.')
             ->build($response);
 
         $data = [
@@ -225,6 +228,11 @@ class DishController
 
         $ID = intval($request->getQueryParams()['id']);
 
+        $dish = $this->dishManager->findOneByUser($ID, $this->security->getUser());
+        if (!$dish) return $this->responseBuilder
+            ->addError('Блюдо не найдено.')
+            ->build($response);
+
         //todo: validate data
         //todo: validate foreign keys
         /*
@@ -249,5 +257,14 @@ class DishController
         $this->responseBuilder->set($stmt->rowCount());
 
         return $this->responseBuilder->build($response);
+    }
+
+    private function buildDish(array $dish): array
+    {
+        $dish['quality'] = $this->qualityManager->findOne($dish['quality_id']);
+        unset($dish['quality_id']);
+        unset($dish['author_id']);
+
+        return $dish;
     }
 }

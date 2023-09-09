@@ -31,9 +31,9 @@ export default function DishVersionList(props: DishVersionListProps) {
     }, [props.dishID]);
 
     function fetchItems(dishID: number) {
-        props.api.request('/dish_versions?' + new URLSearchParams({
+        props.api.request('/dish_versions', {
             dish_id: String(dishID),
-        }), response => {
+        }, (response) => {
             setDishVersions(response);
         });
     }

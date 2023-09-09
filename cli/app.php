@@ -9,6 +9,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use App\Command\Admin\AddUserGroupCommand;
 use App\Command\Admin\RemoveUserGroupCommand;
+use App\Command\Admin\ShowUsersCommand;
 use App\Debug\InitCustomDumper;
 use DI\ContainerBuilder;
 use Dotenv\Dotenv;
@@ -40,6 +41,7 @@ $app = new Application(
 //----------------------------------------------------------------
 // admin commands
 //----------------------------------------------------------------
+$app->add($container->get(ShowUsersCommand::class));
 $app->add($container->get(AddUserGroupCommand::class));
 $app->add($container->get(RemoveUserGroupCommand::class));
 

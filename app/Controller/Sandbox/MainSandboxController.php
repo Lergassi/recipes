@@ -39,7 +39,9 @@ class MainSandboxController
 //        $this->validationBySymfony($request);
 //        $this->devUniqueConstraint($request);
 //        $this->devApiKeyAuth();
-        $this->authByApiKey();
+//        $this->authByApiKey();
+
+        $response->getBody()->write(__METHOD__);
 
         return $response;
     }

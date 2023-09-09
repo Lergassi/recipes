@@ -14,8 +14,8 @@ class AppException extends \Exception
         throw new AppException('Доступ запрещен.');
     }
 
-    public static function entityNotFound()
+    public static function entityNotFound(string $message = 'Сущность не найдена.')
     {
-        throw new AppException('Сущность не найдена.');
+        throw new AppException($message);
     }
 }

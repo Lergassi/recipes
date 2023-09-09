@@ -35,11 +35,12 @@ export default function CreateDishForm(props: CreateDishFormProps) {
 
     function submitHandle(event) {
         event.preventDefault();
-        props.api.request('/dish/create?' + new URLSearchParams({
+        props.api.request('/dish/create', {
+        // props.api.request('/dish/create?', {
             name: name,
             alias: alias,
             quality_id: String(qualityID),
-        }), (response) => {
+        }, (response) => {
             props.createHandler?.(event);
             resetFields();
         });

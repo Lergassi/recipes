@@ -18,9 +18,9 @@ export default function EditQualityForm(props: EditQualityFormProps) {
     const [originalName, setOriginalName] = useState('');
 
     useEffect(() => {
-        props.api.request('/quality/get?' + new URLSearchParams({
+        props.api.request('/quality/get', {
             id: String(props.ID),
-        }), (response) => {
+        }, (response) => {
             //todo: Проверка наличия данных.
 
             setID(response.id);
@@ -34,12 +34,12 @@ export default function EditQualityForm(props: EditQualityFormProps) {
 
     function submitHandle(event) {
         event.preventDefault();
-        props.api.request('/quality/update?' + new URLSearchParams({
+        props.api.request('/quality/update', {
             id: String(props.ID),
             name: name,
             alias: alias,
             sort: String(sort),
-        }), (response) => {
+        }, (response) => {
             props.updateHandler?.(event);  //todo: Можно сделать один метод close на все действия.
         });
     }

@@ -11,6 +11,7 @@ use App\DataService\RecipeService;
 use App\Exception\AppException;
 use App\Factory\ExistsConstraintFactory;
 use App\Factory\RecipeFactory;
+use App\Service\ApiSecurity;
 use App\Service\DataManager;
 use App\Service\ResponseBuilder;
 use App\Service\Validation\Validator;
@@ -37,6 +38,7 @@ class RecipeController
     #[Inject] private ExistsConstraintFactory $existsConstraintFactory;
     #[Inject] private DishVersionManager $dishVersionManager;
     #[Inject] private DishVersionService $dishVersionService;
+    #[Inject] private ApiSecurity $security;
 
     public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
@@ -56,7 +58,7 @@ class RecipeController
         ], $this->responseBuilder)) return $this->responseBuilder
             ->build($response);
 
-        $dishVersion = $this->dishVersionManager->findOne(intval($requestData['dish_version_id']));
+        $dishVersion = $this->dishVersionManager->findOne(intval($requestData['dish_version_id']), $this->security->getUser());
         if (!$dishVersion) throw AppException::entityNotFound();
 
         $data = [
@@ -78,11 +80,9 @@ class RecipeController
             'allowExtraFields' => true,
         ]), $this->responseBuilder)) return $this->responseBuilder->build($response);
 
-        $this->dishVersionService->addRecipe($dishVersion, $data['name']);
+        $recipe = $this->dishVersionService->addRecipe($dishVersion, $data['name']);
 
-        $recipeID = $this->recipeFactory->create($data['name'], $data['dish_version_id']);
-
-        $this->responseBuilder->set($recipeID);
+        $this->responseBuilder->set($recipe['id']);
 
         return $this->responseBuilder->build($response);
     }
@@ -106,10 +106,8 @@ class RecipeController
             'id' => intval($requestData['id']),
         ];
 
-        $recipe = $this->recipeManager->findOne($data['id']);
-        if (!$recipe) return $this->responseBuilder
-            ->addError('Рецепт не найден.')
-            ->build($response);
+        $recipe = $this->recipeManager->findOne($data['id'], $this->security->getUser());
+        if (!$recipe) throw AppException::entityNotFound();
 
         //todo: Запросы на получение данных для api можно сделать отдельно.
         $recipePositions = $this->recipePositionManager->findByRecipe($recipe['id']);
@@ -124,6 +122,8 @@ class RecipeController
             ];
         }
         $recipe['head_commit_id'] = $this->commitManager->findOneHead($recipe['id'])['id'] ?? null;
+
+        $recipe = $this->build($recipe);    //todo: Тут разная логика с all.
 
         $this->responseBuilder->set($recipe);
 
@@ -149,8 +149,11 @@ class RecipeController
             'dish_version_id' => intval($requestData['dish_version_id']),
         ];
 
-        $recipes = $this->recipeManager->findByDishVersion($data['dish_version_id']);
+        $recipes = $this->recipeManager->findByDishVersion($data['dish_version_id'], $this->security->getUser());
         //Без products. Можно метод без детализации назвать по другому или сделать опцию.
+        foreach ($recipes as &$recipe) {
+            $recipe = $this->build($recipe);
+        }
 
         $this->responseBuilder->set($recipes);
 
@@ -184,7 +187,7 @@ class RecipeController
             'weight' => intval($requestData['weight']),
         ];
 
-        $recipe = $this->recipeManager->findOne($data['id']);
+        $recipe = $this->recipeManager->findOne($data['id'], $this->security->getUser());
         if (!$recipe) return $this->responseBuilder
             ->addError('Рецепт не найден.')
             ->build($response);
@@ -225,7 +228,7 @@ class RecipeController
             'weight' => intval($requestData['weight']),
         ];
 
-        $recipe = $this->recipeManager->findOne($data['id']);
+        $recipe = $this->recipeManager->findOne($data['id'], $this->security->getUser());
         if (!$recipe) return $this->responseBuilder
             ->addError('Рецепт не найден.')
             ->build($response);
@@ -256,7 +259,7 @@ class RecipeController
             'id' => intval($requestData['id']),
         ];
 
-        $recipe = $this->recipeManager->findOne($data['id']);
+        $recipe = $this->recipeManager->findOne($data['id'], $this->security->getUser());
         if (!$recipe) return $this->responseBuilder
             ->addError('Рецепт не найден.')
             ->build($response);
@@ -273,7 +276,6 @@ class RecipeController
         $this->pdo->beginTransaction();
 
         $previousRecipeCommit = $this->commitManager->findOnePrevious($recipe['id']);
-
         $recipeCommitID = $this->recipeService->commit($recipe['id'], $previousRecipeCommit['id'] ?? null);
 
         $this->pdo->commit();
@@ -313,7 +315,7 @@ class RecipeController
             'allowExtraFields' => true,
         ]), $this->responseBuilder)) return $this->responseBuilder->build($response);
 
-        $recipe = $this->recipeManager->findOne($data['id']);
+        $recipe = $this->recipeManager->findOne($data['id'], $this->security->getUser());
         if (!$recipe) return $this->responseBuilder
             ->addError('Рецепт не найден.')
             ->build($response);
@@ -329,21 +331,33 @@ class RecipeController
 
         $this->pdo->beginTransaction();
 
-        $newRecipeID = $this->recipeFactory->create($data['name'], $recipe['dish_version_id']);
-
-        //todo: @oop Копирование всех позиций. Скрыть позиции за классом. Убрать/не делать сущность RecipePosition.
+        //todo: @oop Копирование всех позиций. Скрыть позиции за классом. Убрать/не делать сущность RecipePosition. Как быть если recipe может существовать отдельно без dishVersion?
+        /*
+         * dishVersion->addRecipe(...);
+         * recipe = dishVersion->copyRecipe(recipe|recipeID);
+         *
+         * recipe->copy|clone|commit(dishVersion)
+         */
+        $dishVersion = $this->dishVersionManager->findOne($recipe['dish_version_id']);
+        $newRecipe = $this->dishVersionService->addRecipe($dishVersion, $data['name']);
         $recipePositions = $this->recipePositionManager->findByRecipe($recipe['id']);
         foreach ($recipePositions as $recipePosition) {
-
-            $this->recipeService->addProduct($newRecipeID, $recipePosition['reference_product_id'], $recipePosition['weight']);
+            $this->recipeService->addProduct($newRecipe['id'], $recipePosition['reference_product_id'], $recipePosition['weight']);
         }
 
-        $this->recipeService->commit($newRecipeID);
+        $this->recipeService->commit($newRecipe['id']);
 
         $this->pdo->commit();
 
-        $this->responseBuilder->set($newRecipeID);
+        $this->responseBuilder->set($newRecipe['id']);
 
         return $this->responseBuilder->build($response);
+    }
+
+    private function build(array $recipe): array
+    {
+        unset($recipe['author_id']);
+
+        return $recipe;
     }
 }

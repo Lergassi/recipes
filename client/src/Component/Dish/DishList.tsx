@@ -23,7 +23,7 @@ export default function DishList(props: DishListProps) {
     }, []);
 
     function fetchItems() {
-        props.api.request('/dishes', response => {
+        props.api.request('/dishes', {}, response => {
             setDishes(response);
         });
     }

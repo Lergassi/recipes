@@ -35,11 +35,11 @@ export default function CreateReferenceProductForm(props: CreateReferenceProduct
 
     function submitHandle(event) {
         event.preventDefault();
-        props.api.request('/reference_product/create?' + new URLSearchParams({
+        props.api.request('/reference_product/create', {
             name: name,
             alias: alias,
             sort: String(sort),
-        }), response => {
+        }, (response) => {
             props.createHandler?.(Number(response));
         });
     }

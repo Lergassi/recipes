@@ -21,37 +21,37 @@ export default function Recipe(props: RecipeProps) {
     }, [props.ID]);
 
     function fetchRecipe(ID: number): void {
-        props.api.request('/recipe/get?' + new URLSearchParams({
+        props.api.request('/recipe/get', {
             id: String(ID),
-        }), response => {
+        }, (response) => {
             setRecipe(response);
         });
     }
 
     function addProductHandler(ID: number, weight: number): void {
-        props.api.request('/recipe/add_product?' + new URLSearchParams({
+        props.api.request('/recipe/add_product', {
             id: String(recipe.id),
             reference_product_id: String(ID),
             weight: String(weight),
-        }), response => {
+        }, (response) => {
             fetchRecipe(props.ID);
         });
     }
 
     function removeProductHandler(ID: number, weight: number): void {
-        props.api.request('/recipe/remove_product?' + new URLSearchParams({
+        props.api.request('/recipe/remove_product', {
             id: String(recipe.id),
             reference_product_id: String(ID),
             weight: String(weight),
-        }), response => {
+        }, (response) => {
             fetchRecipe(props.ID);
         });
     }
 
     function commitHandler(event): void {
-        props.api.request('/recipe/commit?' + new URLSearchParams({
+        props.api.request('/recipe/commit', {
             id: String(recipe.id),
-        }), response => {
+        }, (response) => {
             // console.log('Commit created!');
             fetchRecipe(props.ID);
         });
@@ -60,10 +60,10 @@ export default function Recipe(props: RecipeProps) {
     function branchHandler(): void {
         if (!branchName) return;
 
-        props.api.request('/recipe/branch?' + new URLSearchParams({
+        props.api.request('/recipe/branch', {
             id: String(recipe.id),
             name: branchName,
-        }), response => {
+        }, (response) => {
             resetBranchControl();
             props.afterBranchCreatedHandler?.(response);
         });

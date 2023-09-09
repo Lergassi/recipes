@@ -19,9 +19,9 @@ export default function RecipeList(props: RecipeListProps) {
     }, [props.dishVersionID]);
 
     function fetchItems(dishID: number) {
-        props.api.request('/recipes?' + new URLSearchParams({
+        props.api.request('/recipes', {
             dish_version_id: String(dishID),
-        }), response => {
+        }, (response) => {
             setRecipes(response);
         });
     }

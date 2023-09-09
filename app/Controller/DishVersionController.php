@@ -13,6 +13,7 @@ use App\Exception\AppException;
 use App\Factory\ExistsConstraintFactory;
 use App\Factory\RecipeFactory;
 use App\Factory\UniqueConstraintFactory;
+use App\Service\ApiSecurity;
 use App\Service\DataManager;
 use App\Service\ResponseBuilder;
 use App\Service\Validation\Validator;
@@ -42,6 +43,7 @@ class DishVersionController
     #[Inject] private DishService $dishService;
     #[Inject] private DishVersionService $dishVersionService;
     #[Inject] private QualityManager $qualityManager;
+    #[Inject] private ApiSecurity $security;
 
     public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
@@ -76,13 +78,11 @@ class DishVersionController
             'quality_id' => intval($requestData['quality_id']),
         ];
 
-        $dish = $this->dishManager->findOne($data['dish_id']);
+        $dish = $this->dishManager->findOneByUser($data['dish_id'], $this->security->getUser());
         if (!$dish) throw AppException::entityNotFound();
 
         $quality = $this->qualityManager->findOne($data['quality_id']);
         if (!$quality) throw AppException::entityNotFound();
-
-        //todo: access
 
         $this->pdo->beginTransaction();
 
@@ -115,13 +115,10 @@ class DishVersionController
             'id' => intval($requestData['id']),
         ];
 
-        $dishVersion = $this->dishVersionManager->findOne($data['id']);
-        if (!$dishVersion) return $this->responseBuilder
-            ->addError('Версия блюда не найдена.')
-            ->build($response);
+        $dishVersion = $this->dishVersionManager->findOne($data['id'], $this->security->getUser());
+        if (!$dishVersion) throw AppException::entityNotFound();
 
-        $dishVersion['quality'] = $this->qualityManager->findOne($dishVersion['quality_id']);
-        unset($dishVersion['quality_id']);
+        $dishVersion = $this->build($dishVersion);
 
         $this->responseBuilder->set($dishVersion);
 
@@ -143,10 +140,9 @@ class DishVersionController
         ], $this->responseBuilder)) return $this->responseBuilder
             ->build($response);
 
-        $dishVersions = $this->dishVersionManager->findByDish(intval($requestData['dish_id']));
+        $dishVersions = $this->dishVersionManager->findByDish(intval($requestData['dish_id']), $this->security->getUser());
         foreach ($dishVersions as &$dishVersion) {
-            $dishVersion['quality'] = $this->qualityManager->findOne($dishVersion['quality_id']);
-            unset($dishVersion['quality_id']);
+            $dishVersion = $this->build($dishVersion);
         }
 
         $this->responseBuilder->set($dishVersions);
@@ -178,7 +174,7 @@ class DishVersionController
         ], $this->responseBuilder)) return $this->responseBuilder
             ->build($response);
 
-        $dishVersion = $this->dishManager->findOne(intval($requestData['id']));
+        $dishVersion = $this->dishVersionManager->findOne(intval($requestData['id']), $this->security->getUser());
         if (!$dishVersion) throw AppException::entityNotFound();
 
         $data = [
@@ -244,8 +240,9 @@ class DishVersionController
 
         $ID = intval($request->getQueryParams()['id']);
 
-        //todo: validate data
-        //todo: access
+        $dishVersion = $this->dishVersionManager->findOne($ID, $this->security->getUser());
+        if (!$dishVersion) throw AppException::entityNotFound();
+
         //todo: удаление рецептов и коммитов
 
         $query = 'delete from dish_versions where id = :id';
@@ -259,5 +256,18 @@ class DishVersionController
         $this->responseBuilder->set($stmt->rowCount());
 
         return $this->responseBuilder->build($response);
+    }
+
+    /**
+     * @param array $dishVersion
+     * @return array
+     */
+    public function build(array $dishVersion): array
+    {
+        $dishVersion['quality'] = $this->qualityManager->findOne($dishVersion['quality_id']);
+        unset($dishVersion['quality_id']);
+        unset($dishVersion['author_id']);
+
+        return $dishVersion;
     }
 }

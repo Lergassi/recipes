@@ -21,9 +21,9 @@ export default function EditDishForm(props: EditDishFormProps) {
     const [autoGenerateAlias, setAutoGenerateAlias] = useState(true);
 
     useEffect(() => {
-        props.api.request('/dish/get?' + new URLSearchParams({
+        props.api.request('/dish/get', {
             id: String(props.ID),
-        }), response => {
+        }, (response) => {
             setID(response.id);
             setName(response.name);
             setAlias(response.alias);
@@ -47,12 +47,12 @@ export default function EditDishForm(props: EditDishFormProps) {
 
     function submitHandle(event) {
         event.preventDefault();
-        props.api.request('/dish/update?' + new URLSearchParams({
+        props.api.request('/dish/update', {
             id: String(ID),
             name: name,
             alias: alias,
             quality_id: String(qualityID),
-        }), (response) => {
+        }, (response) => {
             resetFields();
             props.updateHandler?.(event);
         });

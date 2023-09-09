@@ -22,15 +22,15 @@ export default function ReferenceProduct(props: ReferenceProductProps) {
     }, []);
 
     function fetchItems() {
-        props.api.request('/reference_products', response => {
+        props.api.request('/reference_products', {}, response => {
             setReferenceProducts(response);
         });
     }
 
     function onClickDeleteHandle(ID, event) {
-        props.api.request('/reference_product/delete?' + new URLSearchParams({
+        props.api.request('/reference_product/delete', {
             id: ID,
-        }), response => {
+        }, (response) => {
             fetchItems();
         });
     }

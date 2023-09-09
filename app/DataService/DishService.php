@@ -15,7 +15,7 @@ class DishService
         Validator::notBlank()->length(null, 128)->assert($name);
         Validator::notBlank()->length(null, 150)->assert($alias);
 
-        $query = 'insert into dish_versions (name, alias, dish_id, quality_id) values (:name, :alias, :dish_id, :quality_id)';
+        $query = 'insert into dish_versions (name, alias, dish_id, quality_id, author_id) values (:name, :alias, :dish_id, :quality_id, :author_id)';
 
         $stmt = $this->pdo->prepare($query);
 
@@ -23,6 +23,7 @@ class DishService
         $stmt->bindValue(':alias', $alias);
         $stmt->bindValue(':dish_id', $dish['id']);
         $stmt->bindValue(':quality_id', $quality['id']);
+        $stmt->bindValue(':author_id', $dish['author_id']);
 
         $stmt->execute();
 
@@ -31,6 +32,7 @@ class DishService
             'name' => $name,
             'alias' => $alias,
             'dish_id' => $dish['id'],
+            'author_id' => $dish['author_id'],
         ];
     }
 

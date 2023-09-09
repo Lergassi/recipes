@@ -6,8 +6,9 @@ export default class Api {
     }
 
     //todo: Generic response.
-    request(path: string, callback: (response: any) => void) {
-        fetch(this.host + path)
+    request(path: string, params: any, callback: (response: any) => void) {
+        let url = this.host + path + '?' + new URLSearchParams(params);
+        fetch(url)
             .then((value) => {
                 value.json()
                     .then((value) => {

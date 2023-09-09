@@ -22,7 +22,7 @@ truncate table dish_versions;
 truncate table dishes;
 set foreign_key_checks = 1;
 
-# wipe schema
+# drop schema
 set foreign_key_checks = 0;
 drop table heads;
 drop table recipe_commit_positions;
@@ -33,4 +33,7 @@ drop table dish_versions;
 drop table dishes;
 drop table reference_products;
 drop table qualities;
+drop table users_has_groups;
+drop table user_groups;
+drop table users;
 set foreign_key_checks = 1;

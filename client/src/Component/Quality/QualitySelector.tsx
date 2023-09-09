@@ -13,7 +13,7 @@ export default function QualitySelector(props: QualitySelectorProps) {
     const [selectedQualityID, setSelectedQualityID] = useState<number|null>(null);
 
     useEffect(() => {
-        props.api.request('/qualities', response => {
+        props.api.request('/qualities', {}, response => {
             setQualities(response);
             if (!selectedQualityID) {
                 setSelectedQualityID(response[0]?.id);

@@ -21,7 +21,7 @@ create table if not exists users_has_groups
     user_group_id varchar(32) not null,
     foreign key (user_id) references users (id),
     foreign key (user_group_id) references user_groups (id),
-    unique (user_id)
+    unique (user_id, user_group_id)
 );
 
 create table if not exists qualities
@@ -50,10 +50,10 @@ create table if not exists dishes
     name varchar(128) not null,
     alias varchar(150) not null,
     quality_id int unsigned not null,
-    user_id int unsigned not null,
+    author_id int unsigned not null,
     primary key (id),
     foreign key (quality_id) references qualities (id),
-    foreign key (user_id) references users (id),
+    foreign key (author_id) references users (id),
     unique (alias)
 );
 
@@ -64,9 +64,11 @@ create table if not exists dish_versions
     alias varchar(150) not null,
     dish_id int unsigned not null,
     quality_id int unsigned not null,
+    author_id int unsigned not null,
     primary key (id),
     foreign key (dish_id) references dishes (id),
     foreign key (quality_id) references qualities (id),
+    foreign key (author_id) references users (id),
     unique (alias)
 );
 
@@ -75,8 +77,10 @@ create table if not exists recipes
     id int unsigned auto_increment,
     name varchar(256) not null,
     dish_version_id int unsigned not null,
+    author_id int unsigned not null,
     primary key (id),
-    foreign key (dish_version_id) references dish_versions (id)
+    foreign key (dish_version_id) references dish_versions (id),
+    foreign key (author_id) references users (id)
 );
 
 create table if not exists recipe_positions

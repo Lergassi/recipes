@@ -18,6 +18,12 @@ class RecipeFactory
         $this->dataManager = $dataManager;
     }
 
+    /**
+     * @deprecated
+     * @param string $name
+     * @param int $dishVersionID
+     * @return int
+     */
     public function create(string $name, int $dishVersionID): int
     {
         $query = 'insert into recipes (name, dish_version_id) VALUES (:name, :dish_version_id)';

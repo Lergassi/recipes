@@ -37,11 +37,11 @@ export default function CreateQualityForm(props: CreateQualityFormProps) {
 
     function submitHandle(event) {
         event.preventDefault();
-        props.api.request('/quality/create?' + new URLSearchParams({
+        props.api.request('/quality/create', {
             name: name,
             alias: alias,
             sort: String(sort),
-        }), (response) => {
+        }, (response) => {
             props.createHandler?.(event);
             resetFields();
         });

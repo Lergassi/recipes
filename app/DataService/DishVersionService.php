@@ -18,12 +18,13 @@ class DishVersionService
     {
         Validator::notBlank()->length(null, 256)->assert($name);
 
-        $query = 'insert into recipes (name, dish_version_id) VALUES (:name, :dish_version_id)';
+        $query = 'insert into recipes (name, dish_version_id, author_id) VALUES (:name, :dish_version_id, :author_id)';
 
         $stmt = $this->pdo->prepare($query);
 
         $stmt->bindValue(':name', $name);
         $stmt->bindValue(':dish_version_id', $dishVersion['id']);
+        $stmt->bindValue(':author_id', $dishVersion['author_id']);
 
         $stmt->execute();
 
@@ -31,6 +32,7 @@ class DishVersionService
             'id' => $this->pdo->lastInsertId(),
             'name' => $name,
             'dish_version_id' => $dishVersion['id'],
+            'author_id' => $dishVersion['author_id'],
         ];
     }
 
