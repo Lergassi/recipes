@@ -34,14 +34,14 @@ export default function RegisterComponent(props: RegisterComponentProps) {
 
         setRegisterState('register');
 
-        // props.api.request('/register', {
-        //     email: email,
-        //     password: password,
-        // }, (response) => {
-        //     props.setApiKeyHandler(response);
-        // }, error => {
-        //     setRegisterState('form');
-        // });
+        props.api.request('/register', {
+            email: email,
+            password: password,
+        }, (response) => {
+            props.setApiKeyHandler(response);
+        }, error => {
+            setRegisterState('form');
+        });
     }
 
     return (
