@@ -8,7 +8,10 @@
         "vlucas/phpdotenv": "^5.5",
         "symfony/console": "^6.3",
         "behat/transliterator": "^1.5",
-        "symfony/validator": "^6.3"
+        "symfony/validator": "^6.3",
+        "lmc/http-constants": "^1.2",
+        "respect/validation": "^2.2",
+        "ramsey/uuid": "^4.7"
     },
     "autoload": {
         "files": [

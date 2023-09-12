@@ -1,6 +1,6 @@
 import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import App from './Components/App.js';
+import App from './Component/App.js';
 import {transliterate} from 'transliteration';
 import {generateAlias} from './generateAlias.js';
 

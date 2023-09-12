@@ -1,11 +1,16 @@
 import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import App from './Components/App.js';
+import App from './Component/App.js';
+import Api from './Api.js';
+
+let api = new Api(
+    process.env.APP_API_URL,
+);
 
 const root = createRoot(document.getElementById("root"));
 
 root.render(
-    <StrictMode>
-        <App />
-    </StrictMode>
+    <App
+        api={api}
+    />
 );
