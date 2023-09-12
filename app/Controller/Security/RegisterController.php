@@ -26,6 +26,7 @@ class RegisterController
 
     public function register(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
+//        dump(__METHOD__);
         $requestData = $request->getQueryParams();
         Validator::keySet(
             Validator::key('email', Validator::notBlank()), //todo: В модуле должен быть выбор: почта и/или логин.

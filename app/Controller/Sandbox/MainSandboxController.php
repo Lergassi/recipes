@@ -203,7 +203,7 @@ class MainSandboxController
 
     private function devApiKeyAuth()
     {
-        $user = $this->userManager->findOneByEmailEntity('user01@site.ru');
+        $user = $this->userManager->findOneEntityByEmail('user01@site.ru');
 
         $apiKey = $this->security->login($user);
         dump($apiKey);

@@ -21,6 +21,7 @@ use App\Controller\Security\AuthController;
 use App\Controller\Security\RegisterController;
 use App\Controller\Test\MainTestController;
 use App\Debug\InitCustomDumper;
+use App\Middleware\ExampleDishesMiddleware;
 use App\Middleware\OnlyAdminMiddleware;
 use App\Middleware\OnlyAuthMiddleware;
 use App\Middleware\OnlyDevMiddleware;
@@ -78,7 +79,12 @@ $errorMiddleware->setDefaultErrorHandler($customErrorHandler);
 //----------------------------------------------------------------
 $app->get('/', [MainController::class, 'homepage']);
 
-$app->get('/register', [RegisterController::class, 'register']);
+$app->group('', function (RouteCollectorProxyInterface $group) {
+    $group->get('/register', [RegisterController::class, 'register']);
+})
+    ->addMiddleware($container->get(ExampleDishesMiddleware::class))    //todo: Нужна настройка для включения/отключения.
+;
+//$app->get('/register', [RegisterController::class, 'register']);
 $app->get('/generate_api_key', [AuthController::class, 'generateApiKey']);
 
 $app->group('', function (RouteCollectorProxyInterface $group) {

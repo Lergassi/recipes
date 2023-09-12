@@ -68,7 +68,7 @@ class UserManager
     }
 
     //todo: Можно разделить - DataManager и EntityManager.
-    public function findOneByEmailEntity(string $email): ?User
+    public function findOneEntityByEmail(string $email): ?User
     {
         $query = 'select * from users where email = :email';
         $stmt = $this->pdo->prepare($query);

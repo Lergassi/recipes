@@ -5,6 +5,8 @@ namespace App\Controller\Sandbox;
 use App\DataManager\DishManager;
 use App\DataManager\QualityManager;
 use App\DataManager\ReferenceProductManager;
+use App\DataManager\UserManager;
+use App\Factory\DishFactory;
 use App\Service\DataManager;
 use App\Test\Foo;
 use DI\Attribute\Inject;
@@ -18,6 +20,8 @@ class DataManagerSandbox extends AbstractSandboxController
     #[Inject] private QualityManager $qualityManager;
     #[Inject] private ReferenceProductManager $referenceProductManager;
     #[Inject] private DishManager $dishManager;
+    #[Inject] private UserManager $userManager;
+    #[Inject] private DishFactory $dishFactory;
 
     public function run(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
@@ -25,7 +29,8 @@ class DataManagerSandbox extends AbstractSandboxController
 //        $this->findHead();
 //        $this->separateDataManager();
 //        $this->buildArray();
-        $this->apiBuild_getStarted();
+//        $this->apiBuild_getStarted();
+        $this->dishFactory();
 
         return $response;
     }
@@ -94,5 +99,18 @@ class DataManagerSandbox extends AbstractSandboxController
 //        unset($a[5]);
 //        dump($a);
 //        dump($b);
+    }
+
+    private function dishFactory()
+    {
+        $user = $this->userManager->findOneEntityByEmail('user01@site.ru');
+        $quality = $this->qualityManager->findOneByAlias('common');
+
+        dump($this->dishFactory->create(
+            'Плов',
+            'plov',
+            $quality,
+            $user,
+        ));
     }
 }

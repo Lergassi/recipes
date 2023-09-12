@@ -29,7 +29,7 @@ class AuthController
             Validator::key('password', Validator::notBlank()),
         )->assert($data);
 
-        $user = $this->userManager->findOneByEmailEntity($data['email']);
+        $user = $this->userManager->findOneEntityByEmail($data['email']);
         if (!$user) throw AppException::userNotFound();
         if (!$user->verifyPassword($data['password'])) throw AppException::userNotFound();
 

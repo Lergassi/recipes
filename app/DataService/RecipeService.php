@@ -15,6 +15,7 @@ class RecipeService
     #[Inject] private CommitManager $commitManager;
     #[Inject] private RecipeFactory $recipeFactory;
 
+    //todo: Вариант оптмизации. Создание рецепта со списком продуктов, например для примера, может быть сделано по другой логике.
     //todo: Заменить recipeID на recipe.
     public function addProduct(int $recipeID, int $referenceProductID, int $weight): int {
         if ($weight <= 0) return 0;

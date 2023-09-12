@@ -6,6 +6,7 @@ use App\DataManager\DishManager;
 use App\DataManager\DishVersionManager;
 use App\DataManager\QualityManager;
 use App\Exception\AppException;
+use App\Factory\DishFactory;
 use App\Factory\ExistsConstraintFactory;
 use App\Factory\UniqueConstraintFactory;
 use App\Service\ApiSecurity;
@@ -30,6 +31,7 @@ class DishController
     #[Inject] private Validator $validator;
     #[Inject] private QualityManager $qualityManager;
     #[Inject] private ApiSecurity $security;    //todo: SecurityInterface
+    #[Inject] private DishFactory $dishFactory;
 
     public function create(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
@@ -58,40 +60,17 @@ class DishController
             'quality_id' => $requestData['quality_id']
         ];
 
-        if ($this->validator->validate($data, new Collection([
-            'fields' => [
-                'name' => new Required([
-                    new Length(['min' => 1, 'max' => 128]),
-                ]),
-                'alias' => new Required([
-                    new Length(['min' => 1, 'max' => 100]),
-                    //todo: @demo_disable Отключено для демо. Нужно найти решение для алиасов для бд и кода при наличии пользователей. Или вообще не делать.
-//                    $this->uniqueConstraintFactory->create([
-//                        'table' => 'dishes',
-//                        'column' => 'alias',
-//                    ]),
-                ]),
-                'quality_id' => new Required([
-                    $this->existsConstraintFactory->create([
-                        'table' => 'qualities',
-                    ]),
-                ]),
-            ],
-            'allowExtraFields' => true,
-        ]), $this->responseBuilder)) return $this->responseBuilder->build($response);
+        $quality = $this->qualityManager->findOne(intval($requestData['quality_id']));
+        if (!$quality) return AppException::entityNotFound();
 
-        $query = 'insert into dishes (name, alias, quality_id, author_id) values (:name, :alias, :quality_id, :author_id)';
+        $dish = $this->dishFactory->create(
+            $requestData['name'],
+            $requestData['alias'],
+            $quality,
+            $this->security->getUser(),
+        );
 
-        $stmt = $this->pdo->prepare($query);
-
-        $stmt->bindValue(':name', $data['name']);
-        $stmt->bindValue(':alias', $data['alias']);
-        $stmt->bindValue(':quality_id', $data['quality_id']);
-        $stmt->bindValue(':author_id', $this->security->getUser()->getID());
-
-        $stmt->execute();
-
-        $this->responseBuilder->set($this->pdo->lastInsertId());
+        $this->responseBuilder->set($dish['id']);
 
         return $this->responseBuilder->build($response);
     }

@@ -20,6 +20,18 @@ class ReferenceProductManager
         return $stmt->fetch() ?: null;
     }
 
+    public function findOneByAlias(mixed $alias)
+    {
+        $query = 'select rp.* from reference_products rp where rp.alias = :alias';
+        $stmt = $this->pdo->prepare($query);
+
+        $stmt->bindValue(':alias', $alias);
+
+        $stmt->execute();
+
+        return $stmt->fetch() ?: null;
+    }
+
     public function find(): array
     {
         $query = 'select rp.* from reference_products rp order by rp.name';
