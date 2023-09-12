@@ -1,9 +1,11 @@
-import {useEffect, useState} from 'react';
+import {useContext, useEffect, useState} from 'react';
 import _ from 'lodash';
 import CreateQualityForm from './CreateQualityForm.js';
 import EditQualityForm from './EditQualityForm.js';
 import Api from '../../Api.js';
 import {QualityApiInterface} from '../../Interface/QualityApiInterface.js';
+import UserContext from '../../Context/UserContext.js';
+import {UserGroupID} from '../../Type/UserGroupID.js';
 
 interface QualityProps {
     api: Api;
@@ -16,6 +18,8 @@ export default function Quality(props: QualityProps) {
 
     const [editFormVisible, setEditFormVisible] = useState(false);
     const [editQualityID, setEditQualityID] = useState(0);
+
+    const userContext = useContext(UserContext);
 
     useEffect(() => {
         fetchItems();
@@ -90,7 +94,9 @@ export default function Quality(props: QualityProps) {
                         <th>name</th>
                         <th>alias</th>
                         <th>sort</th>
-                        <th>control</th>
+                        {userContext?.hasGroup(UserGroupID.Admin) && (
+                            <th>control</th>
+                        )}
                     </tr>
                     {qualities.map((value, index, array) => {
                         return (
@@ -99,10 +105,12 @@ export default function Quality(props: QualityProps) {
                                 <td>{value.name}</td>
                                 <td>{value.alias}</td>
                                 <td>{value.sort}</td>
-                                <td>
-                                    <button className={'btn'} onClick={showEditFormHandler.bind(this, value.id)}>Edit</button>
-                                    <button className={'btn'} onClick={deleteHandle.bind(this, value.id)}>Delete</button>
-                                </td>
+                                {userContext?.hasGroup(UserGroupID.Admin) && (
+                                    <td>
+                                        <button className={'btn'} onClick={showEditFormHandler.bind(this, value.id)}>Edit</button>
+                                        <button className={'btn'} onClick={deleteHandle.bind(this, value.id)}>Delete</button>
+                                    </td>
+                                )}
                             </tr>
                         );
                     })}
@@ -110,11 +118,11 @@ export default function Quality(props: QualityProps) {
                 </table>
             </div>
             <div className={'simple-block'}>
-                {createFormVisible ? (<CreateQualityForm
+                {userContext?.hasGroup(UserGroupID.Admin) && (createFormVisible ? (<CreateQualityForm
                     api={props.api}
                     createHandler={createHandler}
                     closeHandler={hideCreateFormHandler}
-                />) : (<button className={'btn'} onClick={showCreateFormHandler}>Create</button>)}
+                />) : (<button className={'btn'} onClick={showCreateFormHandler}>Create</button>))}
                 {editFormVisible && <EditQualityForm
                     api={props.api}
                     ID={editQualityID}

@@ -191,11 +191,11 @@ class DishVersionController
                 ]),
                 'alias' => new Required([
                     new Length(['min' => 1, 'max' => 150]),
-                    $this->uniqueConstraintFactory->create([
-                        'table' => 'dish_versions',
-                        'column' => 'alias',
-                        'existsID' => $data['id'],
-                    ]),
+//                    $this->uniqueConstraintFactory->create([
+//                        'table' => 'dish_versions',
+//                        'column' => 'alias',
+//                        'existsID' => $data['id'],
+//                    ]),
                 ]),
                 'quality_id' => new Required([
                     $this->existsConstraintFactory->create([

@@ -65,10 +65,11 @@ class DishController
                 ]),
                 'alias' => new Required([
                     new Length(['min' => 1, 'max' => 100]),
-                    $this->uniqueConstraintFactory->create([
-                        'table' => 'dishes',
-                        'column' => 'alias',
-                    ]),
+                    //todo: @demo_disable Отключено для демо. Нужно найти решение для алиасов для бд и кода при наличии пользователей. Или вообще не делать.
+//                    $this->uniqueConstraintFactory->create([
+//                        'table' => 'dishes',
+//                        'column' => 'alias',
+//                    ]),
                 ]),
                 'quality_id' => new Required([
                     $this->existsConstraintFactory->create([
@@ -180,11 +181,11 @@ class DishController
                 ]),
                 'alias' => new Required([
                     new Length(['min' => 1, 'max' => 100]),
-                    $this->uniqueConstraintFactory->create([
-                        'table' => 'dishes',
-                        'column' => 'alias',
-                        'existsID' => $data['id'],
-                    ]),
+//                    $this->uniqueConstraintFactory->create([
+//                        'table' => 'dishes',
+//                        'column' => 'alias',
+//                        'existsID' => $data['id'],
+//                    ]),
                 ]),
                 'quality_id' => new Required([
                     $this->existsConstraintFactory->create([

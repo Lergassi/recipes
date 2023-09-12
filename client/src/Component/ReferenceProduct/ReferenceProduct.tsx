@@ -1,9 +1,11 @@
-import {useEffect, useState} from 'react';
+import {useContext, useEffect, useState} from 'react';
 import _ from 'lodash';
 import CreateReferenceProductForm from './CreateReferenceProductForm.js';
 import EditReferenceProductForm from './EditReferenceProductForm.js';
 import {ReferenceProductApiInterface} from '../../Interface/ReferenceProductApiInterface.js';
 import Api from '../../Api.js';
+import UserContext from '../../Context/UserContext.js';
+import {UserGroupID} from '../../Type/UserGroupID.js';
 
 interface ReferenceProductProps {
     api: Api;
@@ -16,6 +18,8 @@ export default function ReferenceProduct(props: ReferenceProductProps) {
 
     const [editFormVisible, setEditFormVisible] = useState(false);
     const [editReferenceProductID, setEditReferenceProductID] = useState(0);
+
+    const userContext = useContext(UserContext);
 
     useEffect(() => {
         fetchItems();
@@ -81,7 +85,9 @@ export default function ReferenceProduct(props: ReferenceProductProps) {
                         <th>name</th>
                         <th>alias</th>
                         <th>sort</th>
-                        <th>control</th>
+                        {userContext?.hasGroup(UserGroupID.Admin) && (
+                            <th>control</th>
+                        )}
                     </tr>
                     {_.map(referenceProducts, (value, index, array) => {
                         return (
@@ -90,10 +96,12 @@ export default function ReferenceProduct(props: ReferenceProductProps) {
                                 <td>{value.name}</td>
                                 <td>{value.alias}</td>
                                 <td>{value.sort}</td>
-                                <td>
-                                    <button className={'btn'} onClick={showEditFormHandler.bind(this, value.id)}>Edit</button>
-                                    <button className={'btn'} onClick={onClickDeleteHandle.bind(this, value.id)}>Delete</button>
-                                </td>
+                                {userContext?.hasGroup(UserGroupID.Admin) && (
+                                    <td>
+                                        <button className={'btn'} onClick={showEditFormHandler.bind(this, value.id)}>Edit</button>
+                                        <button className={'btn'} onClick={onClickDeleteHandle.bind(this, value.id)}>Delete</button>
+                                    </td>
+                                )}
                             </tr>
                         );
                     })}
@@ -101,11 +109,11 @@ export default function ReferenceProduct(props: ReferenceProductProps) {
                 </table>
             </div>
             <div className={'simple-block'}>
-                {createFormVisible ? (<CreateReferenceProductForm
+                {userContext?.hasGroup(UserGroupID.Admin) && (createFormVisible ? (<CreateReferenceProductForm
                     api={props.api}
                     createHandler={createHandler}
                     closeHandler={hideCreateFormHandler}
-                />) : (<button className={'btn'} onClick={showCreateFormHandler}>Create</button>)}
+                />) : (<button className={'btn'} onClick={showCreateFormHandler}>Create</button>))}
                 {editFormVisible && <EditReferenceProductForm
                     api={props.api}
                     ID={editReferenceProductID}

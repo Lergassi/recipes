@@ -18,7 +18,6 @@ class ShowUsersCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $users = $this->userManager->find();
-        dump($users);
         foreach ($users as $user) {
             $output->writeln(implode(' | ',
                 [

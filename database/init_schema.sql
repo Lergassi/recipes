@@ -53,8 +53,8 @@ create table if not exists dishes
     author_id int unsigned not null,
     primary key (id),
     foreign key (quality_id) references qualities (id),
-    foreign key (author_id) references users (id),
-    unique (alias)
+    foreign key (author_id) references users (id)
+#     unique (alias)
 );
 
 create table if not exists dish_versions
@@ -68,8 +68,8 @@ create table if not exists dish_versions
     primary key (id),
     foreign key (dish_id) references dishes (id),
     foreign key (quality_id) references qualities (id),
-    foreign key (author_id) references users (id),
-    unique (alias)
+    foreign key (author_id) references users (id)
+#     unique (alias)
 );
 
 create table if not exists recipes

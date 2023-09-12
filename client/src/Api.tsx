@@ -21,12 +21,15 @@ export default class Api {
         }
 
         let url = this.host + path + '?' + new URLSearchParams(params);
+        // console.log(url);   //todo: debug
         fetch(url)
             .then((value) => {
                 value.json()
                     .then((value) => {
                         if (value.hasOwnProperty('error')) throw new Error(value.error);
+                        // if (value.hasOwnProperty('error')) return callback(null, value.error);
                         if (!value.hasOwnProperty('response')) throw new Error('Ответ от сервера не верный. Ответ не содержит значения response.');
+                        // if (!value.hasOwnProperty('response')) return callback(null, 'Ответ от сервера не верный. Ответ не содержит значения response.');
 
                         callback(value.response);
                     })
