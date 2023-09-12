@@ -12,6 +12,8 @@ export default function RegisterComponent(props: RegisterComponentProps) {
     const [password, setPassword] = useState('');
     const [passwordRepeat, setPasswordRepeat] = useState('');
 
+    const [registerState, setRegisterState] = useState('form');
+
     function emailChangeHandler(event) {
         setEmail(event.target.value);
     }
@@ -30,12 +32,16 @@ export default function RegisterComponent(props: RegisterComponentProps) {
         if (!password) throw Error('Поле "Пароль" не может быть пустым.');
         if (password !== passwordRepeat) throw Error('Пароли не совпадают.');
 
-        props.api.request('/register', {
-            email: email,
-            password: password,
-        }, (response) => {
-            props.setApiKeyHandler(response);
-        });
+        setRegisterState('register');
+
+        // props.api.request('/register', {
+        //     email: email,
+        //     password: password,
+        // }, (response) => {
+        //     props.setApiKeyHandler(response);
+        // }, error => {
+        //     setRegisterState('form');
+        // });
     }
 
     return (
@@ -44,18 +50,18 @@ export default function RegisterComponent(props: RegisterComponentProps) {
             <form action=".">
                 <div className={'input-group'}>
                     <span className={'input-group__label'}>email: </span>
-                    <input className={'app-input'} type="text" onChange={emailChangeHandler}/>
+                    <input className={'app-input'} type="text" onChange={emailChangeHandler} disabled={registerState === 'register'}/>
                 </div>
                 <div className={'input-group'}>
                     <span className={'input-group__label'}>password: </span>
-                    <input className={'app-input'} type="password" onChange={passwordChangeHandler}/>
+                    <input className={'app-input'} type="password" onChange={passwordChangeHandler} disabled={registerState === 'register'}/>
                 </div>
                 <div className={'input-group'}>
                     <span className={'input-group__label'}>password (repeat): </span>
-                    <input className={'app-input'} type="password" onChange={passwordRepeatChangeHandler}/>
+                    <input className={'app-input'} type="password" onChange={passwordRepeatChangeHandler} disabled={registerState === 'register'}/>
                 </div>
                 <div className={'input-group'}>
-                    <input className={'btn'} type="submit" value={'Регистрация'} onClick={registerHandler}/>
+                    <input className={'btn'} type="submit" value={'Регистрация'} onClick={registerHandler} disabled={registerState === 'register'}/>
                 </div>
             </form>
         </div>

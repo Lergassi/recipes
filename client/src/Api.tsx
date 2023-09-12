@@ -15,7 +15,7 @@ export default class Api {
     }
 
     //todo: Generic response.
-    request(path: string, params: any, callback: (response: any) => void) {
+    request(path: string, params: any, callback: (response: any) => void, errorHandler?:(error: any) => void /* todo: Временное решение только для регистрации для создания примеров блюд для демо. */) {
         if (this._apiKey) {
             params['api_key'] = this._apiKey;
         }
@@ -26,9 +26,15 @@ export default class Api {
             .then((value) => {
                 value.json()
                     .then((value) => {
-                        if (value.hasOwnProperty('error')) throw new Error(value.error);
+                        if (value.hasOwnProperty('error')) {
+                            errorHandler?.(value.error);
+                            throw new Error(value.error);
+                        }
                         // if (value.hasOwnProperty('error')) return callback(null, value.error);
-                        if (!value.hasOwnProperty('response')) throw new Error('Ответ от сервера не верный. Ответ не содержит значения response.');
+                        if (!value.hasOwnProperty('response')) {
+                            errorHandler?.('Ответ от сервера не верный. Ответ не содержит значения response.');
+                            throw new Error('Ответ от сервера не верный. Ответ не содержит значения response.');
+                        }
                         // if (!value.hasOwnProperty('response')) return callback(null, 'Ответ от сервера не верный. Ответ не содержит значения response.');
 
                         callback(value.response);
