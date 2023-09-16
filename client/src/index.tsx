@@ -8,7 +8,7 @@ let api = new Api(
 );
 
 if (process.env.NODE_ENV !== 'production') {
-    console.log('Looks like we are in development mode!');
+    console.log('This dev environment.');
 }
 
 const root = createRoot(document.getElementById("root"));

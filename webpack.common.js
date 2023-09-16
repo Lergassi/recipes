@@ -6,8 +6,6 @@ require('dotenv').config({
 });
 
 module.exports = {
-    mode: 'development',
-    // mode: 'production',
     entry: {
         app: './client/dist/index.js',
         sandbox: './client/dist/sandbox.js',
@@ -27,5 +25,5 @@ module.exports = {
 
         ],
     },
-    target: ['web', 'es5']
+    target: ['web', 'es5'],
 };

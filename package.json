@@ -4,11 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev.build_webpack": "webpack --config webpack.dev.js",
+    "dev.build_and_watch_webpack": "webpack --config webpack.dev.js --watch",
     "build_ts": "tsc",
     "build_and_watch_ts": "rm -rf ./client/dist/ && mkdir ./client/dist && tsc --watch",
-    "build_webpack": "webpack --config webpack.config.cjs",
-    "prod.build_webpack": "webpack --config webpack.prod.cjs",
-    "build_and_watch_webpack": "webpack --config webpack.config.cjs --watch",
+    "build_webpack": "webpack --config webpack.prod.js",
+    "build_and_watch_webpack": "webpack --config webpack.prod.js --watch",
     "build": "npm run build_ts && npm run build_webpack"
   },
   "author": "",
